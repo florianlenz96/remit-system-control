@@ -70,7 +70,12 @@ never make them silently in code.
 - **PoC step 1 (domain core) – first slice done:** event-sourced aggregates (Area, SystemProperty, Need,
   Proposal, Decision, Component, Deviation), escalation rules, contradiction detection and conflict
   resolution between properties, property state evaluation – with tests in `tests/Remit.Domain.Tests`.
-- **Next:** projections and the PostgreSQL event store (ADR 0007), then step 2 (web app with the three screens).
+- **Version 0.0.1 – clickable preview:** `src/Remit.App` (ASP.NET Core Minimal API, in-memory event store,
+  simulated analysis and build agents, read models derived from the streams) and `src/Remit.Web` (Vue 3 app with
+  the screens Needs/Proposal, Set System properties, Operation). Tests in `tests/Remit.App.Tests` and Vitest.
+  Start with `./start.sh`. The simulated agents and the in-memory store are placeholders, not decisions.
+- **Next:** PostgreSQL event store (ADR 0007) behind the same store contract, Entra ID sign-in, then the MCP server
+  (step 3) so that real agents replace the simulated ones.
 
 ## Way of working
 

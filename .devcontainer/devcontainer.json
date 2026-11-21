@@ -28,7 +28,7 @@
     "ConnectionStrings__Remit": "Host=db;Port=5432;Database=remit;Username=postgres"
   },
 
-  "postCreateCommand": "dotnet restore && dotnet build --no-restore",
+  "postCreateCommand": "dotnet restore && dotnet build --no-restore && npm --prefix src/Remit.Web ci",
 
   "customizations": {
     "vscode": {

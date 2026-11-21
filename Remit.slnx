@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Remit.App/Remit.App.csproj" />
     <Project Path="src/Remit.Domain/Remit.Domain.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Remit.App.Tests/Remit.App.Tests.csproj" />
     <Project Path="tests/Remit.Domain.Tests/Remit.Domain.Tests.csproj" />
   </Folder>
 </Solution>
