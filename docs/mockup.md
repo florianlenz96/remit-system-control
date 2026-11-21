@@ -1,35 +1,35 @@
-# Klick-Entwurf
+# Clickable Mockup
 
-Interaktiver Entwurf: [Kommandozentrale – Konzept-Mockup](https://claude.ai/artifact/RN25QLDujYidGBDKAJ24so)
-(alle Zahlen sind Beispieldaten).
+Interactive mockup: [Kommandozentrale – concept mockup](https://claude.ai/artifact/RN25QLDujYidGBDKAJ24so)
+(all numbers are sample data).
 
-## Screen 1 – Bedarf und KI-Vorschlag
+## Screen 1 – Need and AI Proposal
 
-- Kopf: Bedarf B-042 mit Herkunft (Jira KUNDE-318), Beschreibung in Fachsprache, Ist-Werte
-  (p95 820 ms, abends 1.400 ms), Status „Wartet auf TPO-Entscheidung“.
-- KI-Analyse mit Ursache und drei Optionen; die empfohlene Option zeigt Wirkung, Kosten, Risiko
-  und welche Eigenschaften der TPO festlegen muss.
-- Aktionen: „Annehmen und Eigenschaften festlegen“, „Rückfrage stellen“.
-- Seitenleiste: Systemkarte mit Komponenten und Zustand (neue Komponente als „vorgeschlagen“),
-  weitere Bedarfe.
+- Header: Need B-042 with origin (Jira KUNDE-318), description in domain language, actual values
+  (p95 820 ms, 1,400 ms in the evening), status "Waiting for TPO Decision".
+- AI analysis with cause and three Options; the recommended Option shows effect, cost, risk
+  and which properties the TPO must set.
+- Actions: "Accept and set properties", "Ask a question".
+- Sidebar: system map with Components and their state (new Component as "proposed"),
+  further Needs.
 
-## Screen 2 – Systemeigenschaften festlegen
+## Screen 2 – Set System properties
 
-- Leitsatz: „Du legst fest, was gelten muss. Die KI entscheidet, wie.“
-- Gruppen: Ziel (p95, Verfügbarkeit), Aktualität (TTL Preise, Texte; Lagerbestand nie cachen),
-  Ausfall und Backup (Verhalten, Backup, RTO), Budget und Rahmen (Budget, Datenstandort),
-  Autonomie (Stufe 1–4).
-- Seitenleiste: „Was die KI daraus macht“ – entscheidet selbst / fragt dich; Prüfung vor Freigabe.
-- Aktion: „Freigeben – KI setzt um und betreibt“.
+- Guiding sentence: "You set what must apply. The AI decides how."
+- Groups: target (p95, availability), freshness (TTL for prices, texts; never cache stock levels),
+  failure and backup (behavior, backup, RTO), budget and constraints (budget, data location),
+  autonomy (level 1–4).
+- Sidebar: "What the AI does with it" – decides itself / asks you; check before approval.
+- Action: "Approve – AI implements and operates".
 
-## Screen 3 – Betrieb
+## Screen 3 – Operation
 
-- Soll-Ist-Kacheln je Eigenschaft (erfüllt / gefährdet / verletzt).
-- Hervorgehobene Rückfrage: „Black Friday: Ziel und Budget sind nicht beide haltbar“ mit drei Optionen.
-- Entscheidungsprotokoll der KI mit Datum und Begründung.
-- Vorher-nachher-Vergleich der Antwortzeit; Hinweis auf Spiegelung nach Jira und Confluence.
+- Target vs. actual tiles per property (met / at risk / violated).
+- Highlighted TPO question: "Black Friday: target and budget cannot both be met" with three Options.
+- The AI's decision log with date and rationale.
+- Before/after comparison of response time; note on mirroring to Jira and Confluence.
 
-## Noch nicht entworfen
+## Not yet designed
 
-- Systemgraph als Gesamtübersicht (Einstieg)
-- Datenfluss-Ansicht für Bereiche mit Transparenzstufe 3
+- System graph as an overall overview (entry point)
+- Data flow view for Areas with transparency level 3

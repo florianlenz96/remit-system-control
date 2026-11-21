@@ -1,1 +1,1 @@
-Bicep-Templates für Zentrale und Demo-Shop (siehe ADR 0003, PoC-Schritt 4).
+Bicep templates for the command center and the demo shop (see ADR 0003, PoC step 4).

@@ -1,74 +1,74 @@
 # Vision
 
-## Die Idee in einem Satz
+## The idea in one sentence
 
-Programmiersprachen verlieren für die meisten Beteiligten an Bedeutung: Wer ein System verantwortet,
-beschreibt künftig Absicht und Grenzen – KI baut und betreibt. Die Kommandozentrale ist der Ort,
-an dem das passiert.
+Programming languages are losing importance for most people involved: whoever is responsible for a system
+will in future describe intent and limits – AI builds and operates. The Kommandozentrale is the place
+where that happens.
 
-## Warum
+## Why
 
-- Die Bausteine gibt es einzeln (Coding-Agents, SRE Agent, Chaos Studio, Ticketsysteme, Wikis),
-  aber nichts verbindet sie zu einem durchgehenden Kreislauf von der Absicht bis zum Betrieb.
-- Kunden werden KI keinen Vollzugriff auf Produktivsysteme geben. Sie brauchen abgestuftes,
-  messbares Vertrauen.
-- Die Rolle „Technical Product Owner“ entsteht: jemand, der das Gesamtsystem versteht und in
-  technischer Fachsprache beschreibt, was er will, ohne jede Komponente verstehen zu müssen.
+- The building blocks exist individually (coding agents, SRE Agent, Chaos Studio, ticket systems, wikis),
+  but nothing connects them into a continuous loop from intent to operation.
+- Customers will not give AI full access to production systems. They need graduated,
+  measurable trust.
+- The role "Technical Product Owner" is emerging: someone who understands the overall system and
+  describes in technical domain language what they want, without having to understand every Component.
 
-## Die Rolle des TPO
+## The role of the TPO
 
-- Formuliert oder übernimmt **Bedarfe** (z. B. aus Jira).
-- Bewertet **Vorschläge** der KI und legt **Systemeigenschaften** fest: Ziele, TTL, Backup,
-  Ausfallverhalten, Budget, Datenstandort.
-- Legt pro **Bereich** fest, wie viel die KI selbst darf (**Autonomie**) und wie genau sie
-  erklären muss (**Transparenz**).
-- Trifft die Entscheidungen, die keine Technik beantworten kann – vor allem, wenn Eigenschaften
-  kollidieren (Beispiel: zum Black Friday sind Ziel-Antwortzeit und Budget nicht beide haltbar).
-- Behält die **Ownership**. Die KI führt aus.
+- Writes or takes over **Needs** (e.g. from Jira).
+- Evaluates the AI's **Proposals** and sets **System properties**: targets, TTL, backup,
+  failure behavior, budget, data location.
+- Sets per **Area** how much the AI may do on its own (**autonomy**) and how precisely it
+  must explain itself (**transparency**).
+- Makes the Decisions that no technology can answer – above all when properties
+  conflict (example: on Black Friday, target response time and budget cannot both be met).
+- Keeps **ownership**. The AI executes.
 
-## Der Kreislauf
+## The loop
 
-1. **Bedarf**: „Der Shop soll schneller antworten.“
-2. **Vorschlag**: Die KI analysiert die Ursache und bietet Optionen an (Cache, CDN, DB skalieren).
-3. **Eigenschaften**: Der TPO nimmt eine Option an und legt fest, was gelten muss.
-4. **Bauen**: Ein Bau-Agent setzt um und dokumentiert jede eigene Entscheidung mit Begründung.
-5. **Betreiben**: Ein Betriebs-Agent hält die Eigenschaften dauerhaft ein.
-6. **Lernen**: Abweichungen führen zu neuen Entscheidungen – durch die KI oder als Rückfrage.
+1. **Need**: "The shop should respond faster."
+2. **Proposal**: The AI analyzes the cause and offers Options (cache, CDN, scale the DB).
+3. **Properties**: The TPO accepts an Option and sets what must apply.
+4. **Build**: A build agent implements it and documents each of its own Decisions with a rationale.
+5. **Operate**: An operations agent keeps the properties met permanently.
+6. **Learn**: Deviations lead to new Decisions – by the AI or as a TPO question.
 
-## Autonomie und Transparenz
+## Autonomy and transparency
 
-Wie viel der TPO verstehen muss, hängt nicht von der technischen Komplexität ab, sondern davon,
-was im schlimmsten Fall passiert. Drei Fragen pro Bereich:
+How much the TPO has to understand does not depend on technical complexity, but on
+what happens in the worst case. Three questions per Area:
 
-- Ist der Schaden begrenzt?
-- Lässt sich ein Fehler rückgängig machen?
-- Sind Menschen oder Recht betroffen?
+- Is the damage limited?
+- Can a mistake be undone?
+- Are people or legal matters affected?
 
-Ein Cache (begrenzt, umkehrbar, rekonstruierbar) bekommt hohe Autonomie und wenig Transparenz.
-Kundendaten (nicht umkehrbar, DSGVO-Nachweispflicht) bekommen niedrige Autonomie und volle
-Transparenz bis hin zum Datenfluss.
+A cache (limited, reversible, reconstructable) gets high autonomy and little transparency.
+Customer data (not reversible, GDPR accountability) gets low autonomy and full
+transparency, down to the data flow.
 
-**Verdiente Autonomie:** Die Zentrale bewertet KI-Entscheidungen im Nachhinein. Ab einer
-einstellbaren Erfolgsquote schlägt sie dem TPO eine höhere Stufe vor – entscheiden muss er selbst.
+**Earned autonomy:** The command center evaluates AI Decisions after the fact. Above a
+configurable success rate, it proposes a higher level to the TPO – the TPO must decide.
 
-Die Autonomie wird zusätzlich über Azure-Rechte durchgesetzt: Ein Agent auf Stufe 1 hat nur
-Leserechte und *kann* nichts ändern. Autonomie ist damit technisch garantiert, nicht nur vereinbart.
+Autonomy is additionally enforced via Azure permissions: an agent at level 1 only has
+read permissions and *cannot* change anything. Autonomy is thus technically guaranteed, not merely agreed.
 
-## Auslieferung
+## Delivery
 
-Die Zentrale läuft im **Azure-Tenant des Kunden**, eine Instanz pro Kunde, ausgerollt per Bicep,
-später als Azure Managed Application. Daten, Modelle (Microsoft Foundry, EU-Region) und Agents
-bleiben beim Kunden.
+The command center runs in the **customer's Azure tenant**, one instance per customer, deployed via Bicep,
+later as an Azure Managed Application. Data, models (Microsoft Foundry, EU region) and agents
+stay with the customer.
 
-## Geschäftsmodell
+## Business model
 
-- Framework und Methode als Marketing und Positionierung („CAF für das KI-Zeitalter“ –
-  Ergänzung, keine Konkurrenz zu Microsoft).
-- Lizenz pro Instanz.
-- Beratung: Assessment („Sie stehen bei Stufe 1“), Einführung, Begleitung beim Aufstieg
-  der Autonomiestufen.
+- Framework and method as marketing and positioning ("CAF for the AI era" –
+  a complement to Microsoft, not competition).
+- License per instance.
+- Consulting: assessment ("You are at level 1"), introduction, support in moving up
+  the autonomy levels.
 
-## Abgrenzung
+## Differentiation
 
-Backstage, Port, Cortex sind Kataloge – sie zeigen, was existiert. Die Kommandozentrale
-*steuert* den Kreislauf von Absicht zu Betrieb.
+Backstage, Port and Cortex are catalogs – they show what exists. The Kommandozentrale
+*steers* the loop from intent to operation.

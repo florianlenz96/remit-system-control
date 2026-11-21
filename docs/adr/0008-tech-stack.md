@@ -1,57 +1,57 @@
-# ADR 0008: Tech-Stack der Zentrale
+# ADR 0008: Tech stack of the command center
 
-- Status: angenommen
-- Datum: 2026-11-21
+- Status: accepted
+- Date: 2026-11-21
 
-## Kontext
+## Context
 
-Festgelegt sind bereits: Web-Anwendung, Betrieb auf Azure im Kundentenant (ADR 0003),
-PostgreSQL (ADR 0007, vorgeschlagen), eigener MCP-Server (ADR 0006), Infrastruktur als Bicep.
-Offen waren Sprache und Frameworks für Backend und Frontend.
+Already decided: web application, operation on Azure in the customer's tenant (ADR 0003),
+PostgreSQL (ADR 0007, proposed), own MCP server (ADR 0006), infrastructure as Bicep.
+Still open were the language and frameworks for backend and frontend.
 
-Kriterien: Erfahrung des Teams; gute SDKs für Azure, Entra ID und MCP; einfach im Kundentenant
-auszurollen und zu aktualisieren; Event Sourcing ohne schwergewichtiges Framework umsetzbar.
+Criteria: the team's experience; good SDKs for Azure, Entra ID and MCP; easy to deploy and update
+in the customer's tenant; event sourcing implementable without a heavyweight framework.
 
-## Entscheidung
+## Decision
 
-| Thema | Entscheidung |
+| Topic | Decision |
 | --- | --- |
-| Backend | **.NET 10 (LTS)**, ASP.NET Core mit Minimal APIs |
-| Frontend | **Vue 3** mit TypeScript und Vite, als Single-Page-App |
-| Auslieferung Frontend | Gebaute Vue-App wird vom ASP.NET-Core-Backend als statische Dateien ausgeliefert – ein Container, ein Origin |
-| Anmeldung | Backend-for-Frontend: ASP.NET Core meldet über Entra ID (OpenID Connect, Microsoft.Identity.Web) an und hält die Sitzung als Cookie; im Browser liegen keine Tokens |
+| Backend | **.NET 10 (LTS)**, ASP.NET Core with Minimal APIs |
+| Frontend | **Vue 3** with TypeScript and Vite, as a single-page app |
+| Frontend delivery | The built Vue app is served by the ASP.NET Core backend as static files – one container, one origin |
+| Sign-in | Backend-for-frontend: ASP.NET Core signs in via Entra ID (OpenID Connect, Microsoft.Identity.Web) and keeps the session as a cookie; no tokens in the browser |
 | Hosting | **Azure Container Apps** |
-| MCP-Server | **Teil des Backends** (gleicher Host, Endpunkt `/mcp`), umgesetzt mit dem offiziellen C#-SDK `ModelContextProtocol.AspNetCore`; Agents authentifizieren sich mit Entra-ID-Tokens ihrer Managed Identity (eigenes Authentifizierungsschema neben dem Cookie) |
-| Event Store | Eigene, schlanke Umsetzung auf PostgreSQL über Npgsql; kein Event-Sourcing-Framework |
-| Tests Backend | **xUnit v3**, Assertions ohne Zusatzbibliothek |
-| Tests Frontend | **Vitest** |
+| MCP server | **Part of the backend** (same host, endpoint `/mcp`), implemented with the official C# SDK `ModelContextProtocol.AspNetCore`; agents authenticate with Entra ID tokens of their managed identity (a separate authentication scheme alongside the cookie) |
+| Event store | Own lean implementation on PostgreSQL via Npgsql; no event sourcing framework |
+| Backend tests | **xUnit v3**, assertions without an extra library |
+| Frontend tests | **Vitest** |
 
-Aufbau des Codes:
+Code layout:
 
 ```
-src/Kommandozentrale.Domain   Domänenkern ohne Abhängigkeiten (Entitäten, Events, Regeln)
-src/…                          weitere Projekte (API/MCP, Persistenz, Adapter, Vue-App) folgen schrittweise
+src/Kommandozentrale.Domain   domain core without dependencies (entities, events, rules)
+src/…                          further projects (API/MCP, persistence, Adapters, Vue app) follow step by step
 tests/Kommandozentrale.Domain.Tests
 ```
 
-## Konsequenzen
+## Consequences
 
-- Gute Azure-, Entra-ID- und MCP-Unterstützung aus einer Hand (Microsoft-SDKs).
-- Ein Container für UI, API und MCP-Server: einfach auszurollen und zu aktualisieren (ADR 0003).
-  Wird der MCP-Server später stärker belastet oder anders abgesichert, lässt er sich als eigener
-  Container abtrennen – er ist nur eine dünne Schicht über dem Domänenkern.
-- Der MCP-Endpunkt und die Oberfläche teilen sich einen Prozess; die Authentifizierungsschemata
-  müssen sauber getrennt sein (Cookie nur für die Oberfläche, Bearer-Token nur für `/mcp`).
-- Event Store selbst zu bauen heißt: Versionierung, optimistische Nebenläufigkeit und
-  Projektionen liegen in unserer Verantwortung – dafür kein Framework-Lock-in.
+- Good Azure, Entra ID and MCP support from a single source (Microsoft SDKs).
+- One container for UI, API and MCP server: easy to deploy and update (ADR 0003).
+  If the MCP server later comes under heavier load or needs different security, it can be split off
+  into its own container – it is only a thin layer over the domain core.
+- The MCP endpoint and the UI share one process; the authentication schemes
+  must be cleanly separated (cookie only for the UI, bearer token only for `/mcp`).
+- Building the event store ourselves means: versioning, optimistic concurrency and
+  projections are our responsibility – in return, no framework lock-in.
 
-## Verworfene Alternativen
+## Rejected alternatives
 
-- **TypeScript / Node.js im Backend**: gutes MCP-SDK, aber schwächere Passung zur Teamerfahrung
-  und zum Microsoft-Ökosystem.
-- **Blazor oder React im Frontend**: Entscheidung des Nutzers für Vue.
-- **MCP-Server als eigener Dienst**: zweiter Container, zweite Identität und doppelte Anbindung
-  an Datenbank und Domäne – im PoC ohne Nutzen.
-- **Marten als Event Store**: ausgereift, aber ein schwergewichtiges Framework, das
-  Datenbankschema und Programmiermodell vorgibt.
-- **MSAL im Browser (Tokens in der SPA)**: mehr Angriffsfläche als ein Backend-for-Frontend.
+- **TypeScript / Node.js in the backend**: good MCP SDK, but a weaker fit with the team's experience
+  and the Microsoft ecosystem.
+- **Blazor or React in the frontend**: the user decided on Vue.
+- **MCP server as a separate service**: a second container, a second identity and duplicate connections
+  to database and domain – no benefit in the PoC.
+- **Marten as event store**: mature, but a heavyweight framework that
+  dictates the database schema and programming model.
+- **MSAL in the browser (tokens in the SPA)**: larger attack surface than a backend-for-frontend.

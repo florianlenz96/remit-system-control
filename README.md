@@ -1,28 +1,28 @@
 # Kommandozentrale
 
-**Absicht rein, betriebenes System raus.**
+**Intent in, operated system out.**
 
-Eine Web-Anwendung, in der ein Technical Product Owner beschreibt, was ein IT-System leisten soll.
-KI-Agents entscheiden, wie es gebaut wird, bauen es und betreiben es – innerhalb von Grenzen,
-die der TPO pro Bereich festlegt (Autonomie- und Transparenzstufen).
+A web application in which a Technical Product Owner describes what an IT system should deliver.
+AI agents decide how it is built, build it and operate it – within limits that the TPO sets
+per Area (autonomy and transparency levels).
 
 ```
-Bedarf  →  Vorschlag der KI  →  TPO legt Systemeigenschaften fest  →  KI baut  →  KI betreibt
-                                                                          ↑                │
-                                                                          └── Abweichung ──┘
+Need  →  AI Proposal  →  TPO sets system properties  →  AI builds  →  AI operates
+                                                           ↑                │
+                                                           └── Deviation ───┘
 ```
 
 ## Status
 
-Konzeptphase abgeschlossen, PoC startet. Siehe [`docs/poc-plan.md`](docs/poc-plan.md).
+Concept phase complete, PoC starting. See [`docs/poc-plan.md`](docs/poc-plan.md).
 
-## Dokumentation
+## Documentation
 
-| Dokument | Inhalt |
+| Document | Content |
 | --- | --- |
-| [CLAUDE.md](CLAUDE.md) | Projektkontext für Claude Code |
-| [docs/vision.md](docs/vision.md) | Idee, Rollen, Ablauf, Geschäftsmodell |
-| [docs/datenmodell.md](docs/datenmodell.md) | Datenmodell mit Cache-Beispiel |
-| [docs/poc-plan.md](docs/poc-plan.md) | PoC: Umfang, Schritte, Abnahme |
-| [docs/mockup.md](docs/mockup.md) | Klick-Entwurf der Oberfläche |
-| [docs/adr/](docs/adr/) | Architekturentscheidungen |
+| [CLAUDE.md](CLAUDE.md) | Project context for Claude Code |
+| [docs/vision.md](docs/vision.md) | Idea, roles, flow, business model |
+| [docs/data-model.md](docs/data-model.md) | Data model with cache example |
+| [docs/poc-plan.md](docs/poc-plan.md) | PoC: scope, steps, acceptance |
+| [docs/mockup.md](docs/mockup.md) | Clickable mockup of the UI |
+| [docs/adr/](docs/adr/) | Architecture decisions |

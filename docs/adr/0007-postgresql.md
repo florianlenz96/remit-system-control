@@ -1,25 +1,25 @@
-# ADR 0007: PostgreSQL für Event Store und Tabellen
+# ADR 0007: PostgreSQL for event store and tables
 
-- Status: vorgeschlagen
-- Datum: 2026-11-21
+- Status: proposed
+- Date: 2026-11-21
 
-## Kontext
+## Context
 
-ADR 0004 verlangt einen append-only Event Store und Tabellen für den aktuellen Stand.
-Im PoC soll möglichst wenig Infrastruktur betrieben werden.
+ADR 0004 requires an append-only event store and tables for the current state.
+In the PoC, as little infrastructure as possible should be operated.
 
-## Entscheidung (Vorschlag)
+## Decision (proposal)
 
-Azure Database for PostgreSQL – Flexible Server für beides: eine Event-Tabelle (append-only,
-pro Aggregat fortlaufende Version) und normale Tabellen als Projektionen.
+Azure Database for PostgreSQL – Flexible Server for both: an event table (append-only,
+with a sequential version per aggregate) and regular tables as projections.
 
-## Konsequenzen
+## Consequences
 
-- Eine Datenbank, eine Transaktion für Event und Projektion möglich.
-- Bekanntes, gut unterstütztes System, auch im Kundentenant einfach auszurollen.
-- Bei sehr hohem Event-Volumen später ggf. ein spezialisierter Store – für den Verlauf der Zentrale nicht zu erwarten.
+- One database; one transaction for event and projection is possible.
+- A well-known, well-supported system, also easy to deploy in the customer's tenant.
+- With very high event volume, possibly a specialized store later – not to be expected for the command center's history.
 
-## Verworfene Alternativen
+## Rejected alternatives
 
-- **Cosmos DB mit Change Feed**: gut für Event Sourcing, aber zweites Datenbankmodell neben relationalen Projektionen.
-- **Spezialisierter Event Store (z. B. EventStoreDB)**: zusätzliche Komponente ohne Not im PoC.
+- **Cosmos DB with change feed**: good for event sourcing, but a second database model alongside relational projections.
+- **Specialized event store (e.g. EventStoreDB)**: an additional component without need in the PoC.

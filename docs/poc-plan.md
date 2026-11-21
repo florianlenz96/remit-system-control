@@ -1,53 +1,53 @@
-# PoC-Plan: Cache-Szenario
+# PoC Plan: Cache Scenario
 
-## Ziel
+## Goal
 
-Ein Szenario echt und vollständig durchziehen – von Bedarf bis Betrieb, auf echtem Azure.
-Hinter den Kulissen darf anfangs manches halb manuell sein; der Ablauf für den TPO muss echt sein.
+Run one scenario for real and end to end – from Need to operation, on real Azure.
+Behind the scenes some things may be semi-manual at first; the flow for the TPO must be real.
 
-**Szenario:** „Schnellere Antwortzeiten im Online-Shop“ → Cache für Katalog und Suche
-(Details: [`datenmodell.md`](datenmodell.md#beispiel-cache-für-den-online-shop)).
+**Scenario:** "Faster response times in the online shop" → cache for catalog and search
+(details: [`data-model.md`](data-model.md#example-cache-for-the-online-shop)).
 
-## Umfang
+## Scope
 
-Im PoC:
+In the PoC:
 
-- Eine Instanz in der eigenen Azure-Subscription, ein Nutzer (der TPO)
-- Ein Beispielsystem „Online-Shop“ (minimale Demo-App mit Katalog-API und Datenbank)
-- Ein Bereich „Katalog und Suche“, Autonomie 3, Transparenz 1
-- Bedarfe werden direkt in der Zentrale angelegt (kein Jira)
-- Die drei Screens aus dem Klick-Entwurf: Bedarf, Eigenschaften, Betrieb
+- One instance in our own Azure subscription, one user (the TPO)
+- One example system "Online shop" (minimal demo app with catalog API and database)
+- One Area "Catalog and search", autonomy 3, transparency 1
+- Needs are created directly in the command center (no Jira)
+- The three screens from the clickable mockup: Need, properties, operation
 
-Nicht im PoC:
+Not in the PoC:
 
-- Jira-, Confluence-Anbindung
-- Mehrere Bereiche, Transparenzstufe 3 (Datenfluss-Ansicht)
-- Verdiente Autonomie
-- Auslieferung als Managed Application
+- Jira and Confluence integration
+- Multiple Areas, transparency level 3 (data flow view)
+- Earned autonomy
+- Delivery as a Managed Application
 
-## Schritte
+## Steps
 
-0. **Tech-Stack entscheiden** (ADR 0008) – mit dem Nutzer, nicht allein.
-1. **Domänenkern**: Entitäten, Events, Projektionen; Regeln für Eskalation und Konflikte mit Tests.
-2. **Zentrale**: Web-App mit den drei Screens auf Basis des Klick-Entwurfs; Anmeldung über Entra ID.
-3. **MCP-Server der Zentrale**: Eigenschaften und Richtlinien lesen, Entscheidungen und Rückfragen melden.
-4. **Infrastruktur**: Bicep für Zentrale (Container Apps, PostgreSQL, Managed Identity) und Demo-Shop.
-5. **Bau-Agent**: Angenommene Option als Auftrag an den GitHub Copilot Coding Agent; Ergebnis (PR, Deployment) als Verweis zurück.
-6. **Messung**: Application Insights und Cost Management lesen; Soll-Ist auf dem Betriebs-Screen.
-7. **Betriebs-Agent**: SRE Agent anbinden; prüfen, ob Freigaben im Review-Modus über Agent Hooks in der Zentrale landen.
-8. **Ernstfall**: Lasttest erzeugt eine Kollision Ziel ↔ Budget → Rückfrage erscheint beim TPO.
+0. **Decide the tech stack** (ADR 0008) – together with the user, not alone.
+1. **Domain core**: entities, events, projections; rules for escalation and conflicts with tests.
+2. **Command center**: web app with the three screens based on the clickable mockup; sign-in via Entra ID.
+3. **MCP server of the command center**: read properties and Policies, report Decisions and TPO questions.
+4. **Infrastructure**: Bicep for the command center (Container Apps, PostgreSQL, managed identity) and the demo shop.
+5. **Build agent**: accepted Option as a task for the GitHub Copilot coding agent; result (PR, deployment) returned as a reference.
+6. **Measurement**: read Application Insights and Cost Management; target vs. actual on the operation screen.
+7. **Operations agent**: connect SRE Agent; check whether approvals in review mode reach the command center via agent hooks.
+8. **Emergency**: a load test creates a conflict target ↔ budget → a TPO question appears for the TPO.
 
-## Abnahmekriterien
+## Acceptance criteria
 
-- [ ] Der TPO legt einen Bedarf an und erhält einen Vorschlag mit mindestens zwei Optionen.
-- [ ] Beim Annehmen fragt die Zentrale genau die `benötigteEigenschaften` der Option ab.
-- [ ] Der Cache wird ohne manuellen Eingriff im Portal gebaut; jede KI-Entscheidung steht mit Begründung im Protokoll.
-- [ ] Der Betriebs-Screen zeigt Soll und Ist aller Eigenschaften aus echten Messwerten.
-- [ ] Eine Kollision zweier „muss“-Eigenschaften erzeugt eine Rückfrage mit Optionen, Frist und Standardoption.
-- [ ] Der TPO sieht an keiner Stelle Code, Git oder Ressourcen-IDs.
-- [ ] Die gesamte Infrastruktur lässt sich per Bicep in eine leere Subscription ausrollen.
+- [ ] The TPO creates a Need and receives a Proposal with at least two Options.
+- [ ] On acceptance, the command center asks for exactly the `requiredProperties` of the Option.
+- [ ] The cache is built without manual intervention in the portal; every AI Decision is in the log with a rationale.
+- [ ] The operation screen shows target and actual for all properties from real measured values.
+- [ ] A conflict between two "must" properties creates a TPO question with Options, deadline and default option.
+- [ ] The TPO never sees code, Git or resource IDs anywhere.
+- [ ] The entire infrastructure can be deployed via Bicep into an empty subscription.
 
-## Parallel
+## In parallel
 
-Ab Woche 3 Klick-Entwurf und Zwischenstand zwei, drei vertrauten Kunden oder Kollegen zeigen.
-Besonders beobachten: Reaktion auf die Autonomiestufen.
+From week 3, show the clickable mockup and interim status to two or three trusted customers or colleagues.
+Watch in particular: the reaction to the autonomy levels.
