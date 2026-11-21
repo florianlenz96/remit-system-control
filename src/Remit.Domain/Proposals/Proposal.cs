@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain;
+namespace Remit.Domain;
 
 public enum ProposalStatus
 {

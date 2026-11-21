@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Kommandozentrale.Domain/Kommandozentrale.Domain.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Kommandozentrale.Domain.Tests/Kommandozentrale.Domain.Tests.csproj" />
-  </Folder>
-</Solution>

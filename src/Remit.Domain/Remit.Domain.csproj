@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>Kommandozentrale.Domain</RootNamespace>
+    <RootNamespace>Remit.Domain</RootNamespace>
   </PropertyGroup>
 
 </Project>

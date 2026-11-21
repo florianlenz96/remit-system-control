@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain;
+namespace Remit.Domain;
 
 /// <summary>
 /// Something that happened in the domain. Events are immutable and never changed once stored (ADR 0004).

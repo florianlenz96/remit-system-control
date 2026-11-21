@@ -15,7 +15,7 @@ In the PoC:
 - One instance in our own Azure subscription, one user (the TPO)
 - One example system "Online shop" (minimal demo app with catalog API and database)
 - One Area "Catalog and search", autonomy 3, transparency 1
-- Needs are created directly in the command center (no Jira)
+- Needs are created directly in Remit (no Jira)
 - The three screens from the clickable mockup: Need, properties, operation
 
 Not in the PoC:
@@ -29,18 +29,18 @@ Not in the PoC:
 
 0. **Decide the tech stack** (ADR 0008) – together with the user, not alone.
 1. **Domain core**: entities, events, projections; rules for escalation and conflicts with tests.
-2. **Command center**: web app with the three screens based on the clickable mockup; sign-in via Entra ID.
-3. **MCP server of the command center**: read properties and Policies, report Decisions and TPO questions.
-4. **Infrastructure**: Bicep for the command center (Container Apps, PostgreSQL, managed identity) and the demo shop.
+2. **Remit**: web app with the three screens based on the clickable mockup; sign-in via Entra ID.
+3. **MCP server of Remit**: read properties and Policies, report Decisions and TPO questions.
+4. **Infrastructure**: Bicep for Remit (Container Apps, PostgreSQL, managed identity) and the demo shop.
 5. **Build agent**: accepted Option as a task for the GitHub Copilot coding agent; result (PR, deployment) returned as a reference.
 6. **Measurement**: read Application Insights and Cost Management; target vs. actual on the operation screen.
-7. **Operations agent**: connect SRE Agent; check whether approvals in review mode reach the command center via agent hooks.
+7. **Operations agent**: connect SRE Agent; check whether approvals in review mode reach Remit via agent hooks.
 8. **Emergency**: a load test creates a conflict target ↔ budget → a TPO question appears for the TPO.
 
 ## Acceptance criteria
 
 - [ ] The TPO creates a Need and receives a Proposal with at least two Options.
-- [ ] On acceptance, the command center asks for exactly the `requiredProperties` of the Option.
+- [ ] On acceptance, Remit asks for exactly the `requiredProperties` of the Option.
 - [ ] The cache is built without manual intervention in the portal; every AI Decision is in the log with a rationale.
 - [ ] The operation screen shows target and actual for all properties from real measured values.
 - [ ] A conflict between two "must" properties creates a TPO question with Options, deadline and default option.

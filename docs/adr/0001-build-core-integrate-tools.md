@@ -20,13 +20,13 @@ We build ourselves what sets us apart:
 Everything else is connected. Where a tool does not fit (e.g. the SRE Agent for part of
 operations), we develop that part ourselves – behind the same Role interface.
 
-The truth about intent and properties lives in the command center. Connected tools receive copies.
+The truth about intent and properties lives in Remit. Connected tools receive copies.
 
 ## Consequences
 
 - Faster to a presentable result; we benefit from the vendors' improvements.
 - Dependency on third-party interfaces; every Role needs an interchangeable Adapter.
-- System properties must never live only in Confluence or Jira – otherwise the command center is just a UI.
+- System properties must never live only in Confluence or Jira – otherwise Remit is just a UI.
 
 ## Rejected alternatives
 

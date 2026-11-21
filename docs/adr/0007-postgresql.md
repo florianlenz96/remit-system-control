@@ -17,7 +17,7 @@ with a sequential version per aggregate) and regular tables as projections.
 
 - One database; one transaction for event and projection is possible.
 - A well-known, well-supported system, also easy to deploy in the customer's tenant.
-- With very high event volume, possibly a specialized store later – not to be expected for the command center's history.
+- With very high event volume, possibly a specialized store later – not to be expected for Remit's history.
 
 ## Rejected alternatives
 

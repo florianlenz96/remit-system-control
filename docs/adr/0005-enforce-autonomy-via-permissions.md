@@ -19,19 +19,19 @@ https://learn.microsoft.com/azure/role-based-access-control/pim-integration
 | Level | Enforcement | SRE Agent mode |
 | --- | --- | --- |
 | 1 | Managed identity with read permissions only | Review |
-| 2 | Approval of each step in the command center (by the agent, not by permissions) | Review |
+| 2 | Approval of each step in Remit (by the agent, not by permissions) | Review |
 | 3 | Write permissions on the Area's resources, limited by Azure Policy | Autonomous |
-| 4 | as 3; additionally the agent may change "should" properties via the command center | Autonomous |
+| 4 | as 3; additionally the agent may change "should" properties via Remit | Autonomous |
 
 We start without just-in-time permissions.
 
 ## Consequences
 
 - Levels 1 and 3 are technically guaranteed, level 2 only by the agent's behavior.
-- Conceivable later: on approval, the command center itself grants a role and revokes it afterwards.
-  For that, the command center would need the right to assign roles (e.g. "Role Based Access Control
+- Conceivable later: on approval, Remit itself grants a role and revokes it afterwards.
+  For that, Remit would need the right to assign roles (e.g. "Role Based Access Control
   Administrator" with conditions) – making it a particularly sensitive target.
-- To be checked in the PoC: whether SRE Agent approvals in review mode reach the command center via agent hooks.
+- To be checked in the PoC: whether SRE Agent approvals in review mode reach Remit via agent hooks.
 
 ## Rejected alternatives
 

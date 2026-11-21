@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain;
+namespace Remit.Domain;
 
 /// <summary>Autonomy level: what the AI may do on its own in an area.</summary>
 public enum AutonomyLevel

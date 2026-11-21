@@ -3,7 +3,7 @@
 As of: 2026-11-21. Living version with comments: [Claude Doc](https://claude.ai/artifact/KL61wynyE9kWLyiY4UBcsk).
 
 The data model describes what a system should deliver, never how it is built. It is the single
-source of truth of the Kommandozentrale. Connected tools only receive copies.
+source of truth of Remit. Connected tools only receive copies.
 
 ## Overview
 
@@ -110,9 +110,9 @@ One Policy per Area. Only the TPO may change it.
 | Autonomy | The AI … | Enforced via | SRE Agent mode |
 | --- | --- | --- | --- |
 | 1 | proposes, implements nothing | read permissions only | Review |
-| 2 | implements after approval of each step | approval in the command center | Review |
+| 2 | implements after approval of each step | approval in Remit | Review |
 | 3 | decides on its own within the properties | write permissions on the Area, limited by Azure Policy | Autonomous |
-| 4 | also adjusts "should" properties and reports | as 3, plus the right to change "should" properties (command center) | Autonomous |
+| 4 | also adjusts "should" properties and reports | as 3, plus the right to change "should" properties (Remit) | Autonomous |
 
 | Transparency | The AI shows |
 | --- | --- |
@@ -148,7 +148,7 @@ Fields: `autonomy`, `transparency`, `escalationRules`, `approvedBy`.
 | `rating` | later: good, neutral, bad |
 
 The ratings yield a success rate per Area. Above a threshold configurable per system,
-the command center proposes a higher level.
+Remit proposes a higher level.
 
 ## Measurement and Deviation
 
@@ -173,7 +173,7 @@ Drift = the system no longer matches the Decisions (e.g. a manual change in the 
 | Measurement source | measurement specs | measured values | Application Insights, Azure Monitor, Cost Management |
 | Documentation | copies of Decisions and properties | – | later Confluence |
 
-The agents read properties and Policies via the command center's MCP server.
+The agents read properties and Policies via Remit's MCP server.
 
 ## Storage
 

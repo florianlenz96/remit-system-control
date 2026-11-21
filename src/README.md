@@ -1,3 +1,3 @@
-Source code of the command center (structure: see ADR 0008).
+Source code of Remit (structure: see ADR 0008).
 
-- `Kommandozentrale.Domain` – domain core: entities, events, rules for autonomy, escalation and conflicts. No dependencies.
+- `Remit.Domain` – domain core: entities, events, rules for autonomy, escalation and conflicts. No dependencies.

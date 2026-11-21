@@ -1,6 +1,6 @@
 # Clickable Mockup
 
-Interactive mockup: [Kommandozentrale – concept mockup](https://claude.ai/artifact/RN25QLDujYidGBDKAJ24so)
+Interactive mockup: [Remit – concept mockup](https://claude.ai/artifact/RN25QLDujYidGBDKAJ24so)
 (all numbers are sample data).
 
 ## Screen 1 – Need and AI Proposal

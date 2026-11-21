@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain;
+namespace Remit.Domain;
 
 // Readable, stable identifiers as used in the data model (e.g. "B-042" for a need, "E1" for a
 // property). Generating them is the job of the application layer.

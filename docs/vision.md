@@ -3,7 +3,7 @@
 ## The idea in one sentence
 
 Programming languages are losing importance for most people involved: whoever is responsible for a system
-will in future describe intent and limits – AI builds and operates. The Kommandozentrale is the place
+will in future describe intent and limits – AI builds and operates. Remit is the place
 where that happens.
 
 ## Why
@@ -48,7 +48,7 @@ A cache (limited, reversible, reconstructable) gets high autonomy and little tra
 Customer data (not reversible, GDPR accountability) gets low autonomy and full
 transparency, down to the data flow.
 
-**Earned autonomy:** The command center evaluates AI Decisions after the fact. Above a
+**Earned autonomy:** Remit evaluates AI Decisions after the fact. Above a
 configurable success rate, it proposes a higher level to the TPO – the TPO must decide.
 
 Autonomy is additionally enforced via Azure permissions: an agent at level 1 only has
@@ -56,7 +56,7 @@ read permissions and *cannot* change anything. Autonomy is thus technically guar
 
 ## Delivery
 
-The command center runs in the **customer's Azure tenant**, one instance per customer, deployed via Bicep,
+Remit runs in the **customer's Azure tenant**, one instance per customer, deployed via Bicep,
 later as an Azure Managed Application. Data, models (Microsoft Foundry, EU region) and agents
 stay with the customer.
 
@@ -70,5 +70,5 @@ stay with the customer.
 
 ## Differentiation
 
-Backstage, Port and Cortex are catalogs – they show what exists. The Kommandozentrale
+Backstage, Port and Cortex are catalogs – they show what exists. Remit
 *steers* the loop from intent to operation.

@@ -12,7 +12,7 @@ the TPO is not a developer. The target group is mainly German enterprise custome
 
 ## Decision
 
-The Kommandozentrale is a web application and runs **in the customer's Azure tenant**.
+Remit is a web application and runs **in the customer's Azure tenant**.
 One instance per customer, deployed via Bicep; later as an Azure Managed Application.
 
 - Sign-in via the customer's Entra ID
