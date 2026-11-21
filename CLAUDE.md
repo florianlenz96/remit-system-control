@@ -56,7 +56,7 @@ Alle Entscheidungen stehen als ADRs in [`docs/adr/`](docs/adr/). Kurzfassung:
 | 0005 | Autonomie wird über Azure-Rechte durchgesetzt; kein PIM für Managed Identities | angenommen |
 | 0006 | Rollen werden über MCP angebunden; die Zentrale bietet selbst einen MCP-Server an | angenommen |
 | 0007 | PostgreSQL für Event Store und Tabellen | vorgeschlagen |
-| 0008 | Tech-Stack der Zentrale | **offen** |
+| 0008 | .NET 10 + Vue 3, ein Container auf Azure Container Apps, MCP-Server im Backend, xUnit v3 / Vitest | angenommen |
 
 Neue grundlegende Entscheidungen immer als neues ADR anlegen (Vorlage: `docs/adr/0000-vorlage.md`),
 nie stillschweigend im Code treffen.
@@ -65,7 +65,7 @@ nie stillschweigend im Code treffen.
 
 - Konzept, Datenmodell und Klick-Entwurf sind fertig.
 - **Als Nächstes: PoC mit dem Cache-Szenario** – siehe [`docs/poc-plan.md`](docs/poc-plan.md).
-- **Vor der ersten Zeile Code:** ADR 0008 (Tech-Stack) mit dem Nutzer klären. Nicht selbst entscheiden.
+- Tech-Stack ist entschieden (ADR 0008). Build und Tests: `dotnet test` im Repository-Wurzelverzeichnis.
 
 ## Arbeitsweise
 
