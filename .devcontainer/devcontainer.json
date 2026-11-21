@@ -1,0 +1,48 @@
+{
+  "name": "Remit",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "shutdownAction": "stopCompose",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "installBicep": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "forwardPorts": [5000, 5173, "db:5432"],
+  "portsAttributes": {
+    "5000": { "label": "Remit backend" },
+    "5173": { "label": "Vue dev server" },
+    "db:5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
+  },
+
+  "containerEnv": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1",
+    "ConnectionStrings__Remit": "Host=db;Port=5432;Database=remit;Username=postgres"
+  },
+
+  "postCreateCommand": "dotnet restore && dotnet build --no-restore",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "Vue.volar",
+        "vitest.explorer",
+        "ms-azuretools.vscode-bicep",
+        "ms-azuretools.vscode-azurecontainerapps",
+        "ckolkman.vscode-postgres",
+        "editorconfig.editorconfig",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ]
+    }
+  }
+}
