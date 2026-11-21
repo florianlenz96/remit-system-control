@@ -47,7 +47,7 @@ onMounted(refresh)
   </main>
 
   <footer v-if="overview">
-    Remit {{ overview.version }} · Preview: the AI agents are simulated and nothing is changed in a real system.
-    Data is kept only until the next restart.
+    Remit {{ overview.version }} · Preview: analysis and building of needs are simulated; a connected operations
+    agent works for real. Data is kept only until the next restart.
   </footer>
 </template>

@@ -56,6 +56,12 @@ public sealed record DeviationMeasureAssigned(
     DecisionId Measure,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public sealed record DeviationResolved(
+    DeviationId DeviationId,
+    string Note,
+    Actor ResolvedBy,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 /// <summary>A violation, forecast violation or drift of a property; leads to a follow-up decision.</summary>
 public sealed class Deviation : AggregateRoot<DeviationId>
 {
@@ -75,6 +81,10 @@ public sealed class Deviation : AggregateRoot<DeviationId>
 
     /// <summary>The follow-up decision (by the AI or as a TPO question).</summary>
     public DecisionId? Measure { get; private set; }
+
+    public bool IsResolved { get; private set; }
+
+    public DateTimeOffset? ResolvedAt { get; private set; }
 
     public static Deviation Detect(
         DeviationId id,
@@ -104,7 +114,28 @@ public sealed class Deviation : AggregateRoot<DeviationId>
             throw new DomainException($"Deviation {Id} already has a measure ({Measure}).");
         }
 
+        EnsureOpen();
         Raise(new DeviationMeasureAssigned(Id, decision, at));
+    }
+
+    /// <summary>The property is fulfilled again.</summary>
+    public void Resolve(string note, Actor resolvedBy, DateTimeOffset at)
+    {
+        EnsureOpen();
+        if (at < DetectedAt)
+        {
+            throw new DomainException("A deviation cannot be resolved before it was detected.");
+        }
+
+        Raise(new DeviationResolved(Id, note ?? "", resolvedBy, at));
+    }
+
+    private void EnsureOpen()
+    {
+        if (IsResolved)
+        {
+            throw new DomainException($"Deviation {Id} is already resolved.");
+        }
     }
 
     protected override void When(IDomainEvent domainEvent)
@@ -121,6 +152,10 @@ public sealed class Deviation : AggregateRoot<DeviationId>
                 break;
             case DeviationMeasureAssigned e:
                 Measure = e.Measure;
+                break;
+            case DeviationResolved e:
+                IsResolved = true;
+                ResolvedAt = e.OccurredAt;
                 break;
             default:
                 throw new InvalidOperationException($"Unknown event {domainEvent.GetType().Name} for {nameof(Deviation)}.");

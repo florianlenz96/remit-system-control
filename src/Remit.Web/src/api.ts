@@ -12,6 +12,7 @@ export type AutonomyLevel = 'ProposeOnly' | 'ApproveEachStep' | 'DecideWithinPro
 export type TransparencyLevel = 'Result' | 'Decisions' | 'DataFlow'
 export type DecisionKind = 'AiDecision' | 'TpoDecision' | 'TpoQuestion'
 export type QuestionStatus = 'Open' | 'Answered' | 'DefaultApplied'
+export type DeviationKind = 'Violated' | 'Forecast' | 'Drift'
 
 export interface Area { id: string; name: string; autonomy: AutonomyLevel; transparency: TransparencyLevel }
 export interface NeedSummary { id: string; title: string; status: NeedStatus; priority: Priority }
@@ -25,17 +26,22 @@ export interface Proposal { id: string; analysis: string; status: string; accept
 export interface Property {
   id: string; type: PropertyType; label: string; rule: string; bindingness: Bindingness
   measuredBy: string; expected: string | null; needId: string | null
+  openDeviation: DeviationKind | null; openDeviationText: string | null
 }
-export interface Component { id: string; name: string; kind: string; status: string; needId: string | null }
+export interface Component { id: string; name: string; kind: string; status: string; needId: string | null; takenOver: boolean }
 export interface Decision {
   id: string; kind: DecisionKind; by: string; chosen: string | null; rationale: string | null
-  level: AutonomyLevel | null; at: string; needId: string | null; needTitle: string | null
+  level: AutonomyLevel | null; at: string; needId: string | null; needTitle: string | null; about: string | null
   question: string | null; options: { key: string; title: string; description: string }[]
   defaultOption: string | null; deadline: string | null; questionStatus: QuestionStatus | null
 }
 export interface Overview {
   version: string; systemName: string; area: Area; needs: NeedSummary[]; properties: Property[]
-  components: Component[]; openQuestions: Decision[]; decisions: Decision[]
+  components: Component[]; openQuestions: Decision[]; decisions: Decision[]; deviations: Deviation[]
+}
+export interface Deviation {
+  id: string; propertyId: string; propertyLabel: string; propertyRule: string; kind: DeviationKind
+  description: string; detectedBy: string; detectedAt: string; resolved: boolean; resolvedAt: string | null; measureId: string | null
 }
 export interface Need {
   id: string; title: string; description: string; status: NeedStatus; priority: Priority; requestedBy: string
@@ -72,6 +78,7 @@ export const api = {
   reject: (needId: string, reason: string) => request<void>('POST', `/api/needs/${needId}/reject`, { reason }),
   answer: (questionId: string, optionKey: string, rationale: string) =>
     request<void>('POST', `/api/questions/${questionId}/answer`, { optionKey, rationale }),
+  setAreaProperty: (input: PropertyInput) => request<{ id: string }>('POST', '/api/area/properties', input),
   changePolicy: (autonomy: AutonomyLevel, transparency: TransparencyLevel, reason: string) =>
     request<void>('PUT', '/api/area/policy', { autonomy, transparency, reason }),
 }

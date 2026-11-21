@@ -208,6 +208,7 @@ function approve() {
         <ul class="map">
           <li v-for="c in overview.components" :key="c.id" :class="{ highlight: c.needId === need.id }">
             {{ c.name }} <span v-if="c.needId === need.id" class="muted">· for this need</span>
+            <span v-else-if="c.takenOver" class="muted">· existing</span>
           </li>
           <li v-if="chosen" class="proposed">{{ chosen.title }} <span class="muted">· proposed</span></li>
         </ul>

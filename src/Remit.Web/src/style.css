@@ -148,3 +148,7 @@ td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
 .map li::before { content: '■ '; color: var(--done); }
 .map li.highlight { font-weight: 600; }
 .map li.proposed::before { content: '□ '; color: var(--accent); }
+.tile.alert { border-color: var(--warn); }
+.tile .chip { align-self: flex-start; }
+.deviation { border-color: var(--warn) !important; }
+.add-property { margin-top: 0.8rem; max-width: 560px; }

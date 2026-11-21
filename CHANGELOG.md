@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.0.2 – 2026-11-21
+
+Remit can now be connected to a real operations agent, e.g. the Azure SRE Agent (ADR 0009, ADR 0010).
+
+- MCP server at `/mcp` with the tools `get_rules`, `check_change`, `report_deviation`, `resolve_deviation`,
+  `report_decision`, `ask_tpo` and `get_question`. `check_change` applies the escalation rules and feasibility
+  checks of the domain core: within the properties the agent may act; a budget overrun, a missed "must"
+  target or a change of the data location always becomes a TPO question. `report_decision` refuses changes
+  the agent was not allowed to make on its own and that no answered TPO question backs.
+- Access to `/mcp` with a bearer key from configuration; closed without one outside local development.
+- Existing building blocks (e.g. an existing Redis cache) are taken over as Components from configuration.
+- Operation: set System properties for the Area directly, Deviations with their state on the property tiles,
+  questions from the operations agent, resolved deviations.
+- Alerts from properties: `GET /api/setup/alert-rules(.parameters.json)` and `infra/modules/property-alerts.bicep`
+  (response time p95, availability, budget).
+- Azure: `infra/main.bicep` and `infra/deploy.sh` (Container Apps, registry, managed identity, Entra ID sign-in).
+- Guide: [`docs/sre-agent.md`](docs/sre-agent.md).
+- Domain: `Component.Adopt`, `Deviation.Resolve`, `ChangeFeasibility` for described changes,
+  `AlwaysAskTrigger.MustPropertyViolated`.
+
 ## 0.0.1 – 2026-11-21
 
 First preview that can be clicked through end to end.

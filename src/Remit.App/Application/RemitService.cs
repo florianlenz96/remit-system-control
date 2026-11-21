@@ -10,7 +10,7 @@ namespace Remit.App.Application;
 /// lets the simulated agents react. Read models are derived from the event streams on every request
 /// (ADR 0004: history is the truth, current state is derived).
 /// </summary>
-public sealed class RemitService
+public sealed partial class RemitService
 {
     public static readonly Actor Tpo = Actor.Person("TPO");
 
@@ -66,6 +66,13 @@ public sealed class RemitService
         {
             return;
         }
+
+        // The shop already runs: its existing building blocks are taken over, not built.
+        AdoptExisting(
+        [
+            new("Shop web app", ComponentKind.Service, "demo:shop-web-app"),
+            new("Product database", ComponentKind.DataStore, "demo:product-database"),
+        ]);
 
         RegisterNeed(
             "Faster response times in the online shop",
@@ -416,7 +423,8 @@ public sealed class RemitService
                 context.Properties,
                 context.Components,
                 decisions.Where(d => d.QuestionStatus == QuestionStatus.Open).ToList(),
-                decisions.Where(d => d.QuestionStatus != QuestionStatus.Open).OrderByDescending(d => d.At).ToList());
+                decisions.Where(d => d.QuestionStatus != QuestionStatus.Open).OrderByDescending(d => d.At).ToList(),
+                context.Deviations.OrderBy(d => d.Resolved).ThenByDescending(d => d.DetectedAt).ToList());
         }
     }
 
@@ -460,20 +468,39 @@ public sealed class RemitService
         }
     }
 
-    /// <summary>Joins the streams for the read models: property → decision → proposal → need.</summary>
+    /// <summary>Joins the streams for the read models: property → decision → proposal → need, and deviations.</summary>
     private sealed class ReadContext
     {
         public ReadContext(RemitService service, IReadOnlyList<Need> needs)
         {
+            var area = service.LoadArea();
             var needTitles = service.LoadAll("need-", Need.FromHistory).ToDictionary(x => x.Aggregate.Id.Value, x => x.Aggregate.Title);
             var proposals = service.LoadAll("proposal-", Proposal.FromHistory).Select(x => x.Aggregate).ToList();
             var proposalToNeed = proposals.ToDictionary(p => p.Id.Value, p => p.NeedId.Value);
             var decisions = service.LoadAll("decision-", Decision.FromHistory);
+            var properties = service.LoadAll("property-", SystemProperty.FromHistory).Select(x => x.Aggregate).ToList();
+            var components = service.LoadAll("component-", Component.FromHistory).Select(x => x.Aggregate).ToList();
+            var deviations = service.LoadAll("deviation-", Deviation.FromHistory).Select(x => x.Aggregate).ToList();
+
+            string PropertyLabel(string id) =>
+                properties.FirstOrDefault(p => p.Id.Value == id) is { } p ? PropertyTemplates.For(p.Definition.Type).Label : id;
 
             string? NeedOf(Decision d) => d.Reference.Kind switch
             {
                 ReferenceKind.Need => d.Reference.Id,
                 ReferenceKind.Proposal => proposalToNeed.GetValueOrDefault(d.Reference.Id),
+                _ => null,
+            };
+
+            string? About(Decision d) => d.Reference.Kind switch
+            {
+                ReferenceKind.Need or ReferenceKind.Proposal => NeedOf(d) is { } n ? needTitles.GetValueOrDefault(n) : null,
+                ReferenceKind.Component => components.FirstOrDefault(c => c.Id.Value == d.Reference.Id)?.Name,
+                ReferenceKind.Deviation => deviations.FirstOrDefault(x => x.Id.Value == d.Reference.Id) is { } dev
+                    ? PropertyLabel(dev.PropertyId.Value)
+                    : null,
+                ReferenceKind.SystemProperty => PropertyLabel(d.Reference.Id),
+                ReferenceKind.Area => area.Name,
                 _ => null,
             };
 
@@ -495,6 +522,7 @@ public sealed class RemitService
                     d.Chosen is null ? x.CreatedAt : d.DecidedAt,
                     need,
                     need is null ? null : needTitles.GetValueOrDefault(need),
+                    About(d),
                     d.Question,
                     d.Options.Select(o => new QuestionOptionView(o.Key, o.Title, o.Description)).ToList(),
                     d.DefaultOptionKey,
@@ -502,12 +530,28 @@ public sealed class RemitService
                     d.QuestionStatus);
             }).ToList();
 
+            Deviations = deviations.Select(d =>
+            {
+                var property = properties.FirstOrDefault(p => p.Id == d.PropertyId);
+                return new DeviationView(
+                    d.Id.Value,
+                    d.PropertyId.Value,
+                    PropertyLabel(d.PropertyId.Value),
+                    property is null ? "" : PropertyTemplates.Describe(property.Definition.Rule),
+                    d.Kind,
+                    d.Description,
+                    d.DetectedBy.Name,
+                    d.DetectedAt,
+                    d.IsResolved,
+                    d.ResolvedAt,
+                    d.Measure?.Value);
+            }).ToList();
+
             var acceptedOptions = proposals
                 .Where(p => p.AcceptedOption is not null)
                 .ToDictionary(p => p.NeedId.Value, p => p.GetOption(p.AcceptedOption!.Value));
 
-            Properties = service.LoadAll("property-", SystemProperty.FromHistory)
-                .Select(x => x.Aggregate)
+            Properties = properties
                 .Where(p => !p.IsRetired)
                 .Select(p =>
                 {
@@ -527,6 +571,8 @@ public sealed class RemitService
                         }
                     }
 
+                    var open = deviations.Where(d => d.PropertyId == p.Id && !d.IsResolved).MaxBy(d => d.DetectedAt);
+
                     return new PropertyView(
                         p.Id.Value,
                         p.Definition.Type,
@@ -535,13 +581,15 @@ public sealed class RemitService
                         p.Definition.Bindingness,
                         p.Definition.Measurement.Source,
                         expected,
-                        need);
+                        need,
+                        open?.Kind,
+                        open?.Description);
                 })
                 .ToList();
 
-            Components = service.LoadAll("component-", Component.FromHistory)
-                .Select(x => x.Aggregate)
-                .Select(c => new ComponentView(c.Id.Value, c.Name, c.Kind, c.Status, decisionToNeed.GetValueOrDefault(c.CreatedFrom.Value)))
+            Components = components
+                .Select(c => new ComponentView(
+                    c.Id.Value, c.Name, c.Kind, c.Status, decisionToNeed.GetValueOrDefault(c.CreatedFrom.Value), c.IsAdopted))
                 .ToList();
         }
 
@@ -550,6 +598,8 @@ public sealed class RemitService
         public IReadOnlyList<PropertyView> Properties { get; }
 
         public IReadOnlyList<ComponentView> Components { get; }
+
+        public IReadOnlyList<DeviationView> Deviations { get; }
     }
 
     // ---- Helpers ------------------------------------------------------------------------------

@@ -14,7 +14,8 @@ Need  →  AI Proposal  →  TPO sets system properties  →  AI builds  →  AI
 
 ## Status
 
-Version **0.0.1** – first preview you can click through (see [CHANGELOG](CHANGELOG.md)).
+Version **0.0.2** – clickable preview with an MCP server for a real operations agent such as the Azure SRE Agent
+(see [CHANGELOG](CHANGELOG.md) and [`docs/sre-agent.md`](docs/sre-agent.md)).
 PoC plan: [`docs/poc-plan.md`](docs/poc-plan.md).
 
 ## Try it
@@ -48,8 +49,14 @@ What you can do in 0.0.1:
    with Options, deadline and default option).
 5. Change the Policy of the Area (autonomy 1–4) on the Operation screen and see how the AI's behaviour changes.
 
-Limits of the preview: the AI agents are simulated (keyword-based, prepared Options), nothing is built in a
-real system, no sign-in, no measured values yet, and all data lives in memory until the next restart.
+6. Connect an operations agent (e.g. the Azure SRE Agent) to `/mcp`: it reads the rules, reports Deviations,
+   checks every change with Remit and asks you when it may not decide. Locally the endpoint is open at
+   http://localhost:5000/mcp; in Azure it needs the bearer key – see [`docs/sre-agent.md`](docs/sre-agent.md).
+
+**In Azure:** `infra/deploy.sh <resource-group>` deploys Remit with Entra ID sign-in (see [`infra/`](infra/)).
+
+Limits of the preview: analysis and building of Needs are simulated (keyword-based, prepared Options), no measured
+values are read yet, and all data lives in memory until the next restart.
 
 Development: `dotnet test` (backend), `npm --prefix src/Remit.Web test` (frontend),
 `npm --prefix src/Remit.Web run dev` for the Vue dev server on port 5173 next to `dotnet run --project src/Remit.App`.
@@ -65,4 +72,5 @@ Development: `dotnet test` (backend), `npm --prefix src/Remit.Web test` (fronten
 | [docs/data-model.md](docs/data-model.md) | Data model with cache example |
 | [docs/poc-plan.md](docs/poc-plan.md) | PoC: scope, steps, acceptance |
 | [docs/mockup.md](docs/mockup.md) | Clickable mockup of the UI |
+| [docs/sre-agent.md](docs/sre-agent.md) | Connecting the Azure SRE Agent as operations agent |
 | [docs/adr/](docs/adr/) | Architecture decisions |

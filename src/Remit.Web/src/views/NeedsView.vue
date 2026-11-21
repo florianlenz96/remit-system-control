@@ -82,7 +82,7 @@ async function submit() {
         <p class="muted">Area of the {{ overview.systemName.toLowerCase() }}</p>
         <h4>System map</h4>
         <ul class="map" v-if="overview.components.length">
-          <li v-for="c in overview.components" :key="c.id">{{ c.name }}</li>
+          <li v-for="c in overview.components" :key="c.id">{{ c.name }} <span v-if="c.takenOver" class="muted">· existing</span></li>
         </ul>
         <p v-else class="muted">No building blocks created by the AI yet.</p>
       </div>
