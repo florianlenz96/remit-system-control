@@ -1,4 +1,4 @@
-import type { AutonomyLevel, DecisionKind, NeedStatus, PropertyInput, PropertyTemplate, PropertyType, TransparencyLevel } from './api'
+import type { AutonomyLevel, DecisionKind, DeviationKind, NeedStatus, PropertyInput, PropertyTemplate, PropertyType, TransparencyLevel } from './api'
 
 export const needStatus: Record<NeedStatus, string> = {
   New: 'New',
@@ -34,6 +34,12 @@ export const transparency: { value: TransparencyLevel; level: number; text: stri
   { value: 'Decisions', level: 2, text: 'Additionally every decision with its rationale' },
   { value: 'DataFlow', level: 3, text: 'Additionally the data flow' },
 ]
+
+export const deviationKind: Record<DeviationKind, string> = {
+  Violated: 'Violated',
+  Forecast: 'At risk',
+  Drift: 'Differs from the decisions',
+}
 
 export const decisionKind: Record<DecisionKind, string> = {
   AiDecision: 'AI decision',

@@ -32,6 +32,17 @@ public sealed record ComponentActivated(
     DecisionId Decision,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+/// <summary>A building block that existed before Remit and was taken over, already in operation.</summary>
+public sealed record ComponentAdopted(
+    ComponentId ComponentId,
+    AreaId AreaId,
+    string Name,
+    ComponentKind Kind,
+    IReadOnlyList<string> ResourceRefs,
+    DecisionId CreatedFrom,
+    Actor AdoptedBy,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public sealed record ComponentRetired(
     ComponentId ComponentId,
     DecisionId Decision,
@@ -59,6 +70,9 @@ public sealed class Component : AggregateRoot<ComponentId>
     public ComponentStatus Status { get; private set; }
 
     public DecisionId CreatedFrom { get; private set; }
+
+    /// <summary>Existed before Remit and was taken over rather than built by the AI.</summary>
+    public bool IsAdopted { get; private set; }
 
     public IReadOnlyList<ComponentId> DependsOn => _dependsOn;
 
@@ -91,6 +105,28 @@ public sealed class Component : AggregateRoot<ComponentId>
             createdFrom,
             plannedBy,
             at));
+        return component;
+    }
+
+    /// <summary>
+    /// Takes over a building block that already runs, e.g. an existing cache. A person decides this; the
+    /// decision keeps the component traceable (principle 5).
+    /// </summary>
+    public static Component Adopt(
+        ComponentId id,
+        AreaId areaId,
+        string name,
+        ComponentKind kind,
+        IEnumerable<string> resourceRefs,
+        DecisionId decision,
+        Actor adoptedBy,
+        DateTimeOffset at)
+    {
+        Guard.RequirePerson(adoptedBy, "take over an existing component");
+        var refs = Guard.NotEmpty(resourceRefs.Where(r => !string.IsNullOrWhiteSpace(r)).Distinct(), nameof(resourceRefs));
+        var component = new Component();
+        component.Raise(new ComponentAdopted(
+            id, areaId, Guard.NotBlank(name, nameof(name)), Guard.Defined(kind, nameof(kind)), refs, decision, adoptedBy, at));
         return component;
     }
 
@@ -133,6 +169,16 @@ public sealed class Component : AggregateRoot<ComponentId>
                 _dependsOn.AddRange(e.DependsOn);
                 CreatedFrom = e.CreatedFrom;
                 Status = ComponentStatus.Planned;
+                break;
+            case ComponentAdopted e:
+                Id = e.ComponentId;
+                AreaId = e.AreaId;
+                Name = e.Name;
+                Kind = e.Kind;
+                _resourceRefs.AddRange(e.ResourceRefs);
+                CreatedFrom = e.CreatedFrom;
+                IsAdopted = true;
+                Status = ComponentStatus.Active;
                 break;
             case ComponentActivated e:
                 _resourceRefs.AddRange(e.ResourceRefs);

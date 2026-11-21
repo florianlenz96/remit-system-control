@@ -57,6 +57,8 @@ All decisions are recorded as ADRs in [`docs/adr/`](docs/adr/). Summary:
 | 0006 | Roles are connected via MCP; Remit offers its own MCP server | accepted |
 | 0007 | PostgreSQL for event store and tables | proposed |
 | 0008 | .NET 10 + Vue 3, one container on Azure Container Apps, MCP server in the backend, xUnit v3 / Vitest | accepted |
+| 0009 | Operations agent works through Remit's MCP server; Azure SRE Agent as first Adapter; existing resources adopted | proposed |
+| 0010 | Monitoring alerts are derived from System properties | proposed |
 
 Always record new fundamental decisions as a new ADR (template: `docs/adr/0000-template.md`),
 never make them silently in code.
@@ -74,8 +76,11 @@ never make them silently in code.
   simulated analysis and build agents, read models derived from the streams) and `src/Remit.Web` (Vue 3 app with
   the screens Needs/Proposal, Set System properties, Operation). Tests in `tests/Remit.App.Tests` and Vitest.
   Start with `./start.sh`. The simulated agents and the in-memory store are placeholders, not decisions.
-- **Next:** PostgreSQL event store (ADR 0007) behind the same store contract, Entra ID sign-in, then the MCP server
-  (step 3) so that real agents replace the simulated ones.
+- **Version 0.0.2 – operations agent:** MCP server `/mcp` (`src/Remit.App/Mcp`, ADR 0009) with bearer-key access,
+  existing building blocks taken over as Components, Deviations, alerts derived from properties (ADR 0010),
+  Bicep for Container Apps with Entra ID sign-in (`infra/`). Guide for the Azure SRE Agent: `docs/sre-agent.md`.
+- **Next:** PostgreSQL event store (ADR 0007) behind the same store contract – without it every restart loses the
+  properties; then measured values (step 6) and the build agent (step 5).
 
 ## Way of working
 

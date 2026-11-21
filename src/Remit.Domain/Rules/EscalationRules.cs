@@ -19,6 +19,9 @@ public enum AlwaysAskTrigger
     DataLocationChange,
     BudgetExceeded,
     OutageLongerThanRecoveryTime,
+
+    /// <summary>The change is expected to miss a "must" property.</summary>
+    MustPropertyViolated,
 }
 
 public enum EscalationOutcome

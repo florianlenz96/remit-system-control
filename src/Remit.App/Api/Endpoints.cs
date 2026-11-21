@@ -51,6 +51,16 @@ public static class Endpoints
             return Results.NoContent();
         });
 
+        api.MapPost("/area/properties", (PropertyInput r, RemitService s) =>
+        {
+            var id = s.SetAreaProperty(r);
+            return Results.Created($"/api/overview", new CreatedResponse(id));
+        });
+
+        // Setup only (behind sign-in in Azure): alert rules derived from the properties, ADR 0010.
+        api.MapGet("/setup/alert-rules", (RemitService s) => s.GetAlertPlan());
+        api.MapGet("/setup/alert-rules.parameters.json", (RemitService s) => AlertRules.ToParametersFile(s.GetAlertPlan()));
+
         api.MapPut("/area/policy", (ChangePolicyRequest r, RemitService s) =>
         {
             s.ChangePolicy(r.Autonomy, r.Transparency, r.Reason);

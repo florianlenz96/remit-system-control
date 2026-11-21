@@ -123,7 +123,7 @@ public sealed class FlowTests
 
         service.AcceptOption("N-001", "cache", CacheInputs());
         Assert.Equal(NeedStatus.PropertiesDefined, service.GetNeed("N-001").Status);
-        Assert.Empty(service.GetOverview().Components);
+        Assert.Empty(Built(service));
 
         service.ChangePolicy(AutonomyLevel.DecideWithinProperties, TransparencyLevel.Result, "Go ahead");
 
@@ -161,7 +161,7 @@ public sealed class FlowTests
         service.AnswerQuestion(question.Id, "raise-budget", "");
 
         var overview = service.GetOverview();
-        Assert.Equal(2, overview.Components.Count);
+        Assert.Equal(2, overview.Components.Count(c => !c.TakenOver));
         var budgets = overview.Properties.Where(p => p.Type == PropertyType.Budget).Select(p => p.Rule).Order().ToList();
         Assert.Equal(["at most 350 EUR/month", "at most 400 EUR/month"], budgets);
         Assert.All(overview.Properties, p => Assert.NotNull(p.NeedId));
@@ -176,7 +176,7 @@ public sealed class FlowTests
         service.AcceptOption("N-001", "cache", CacheInputs(budget: 175));
 
         Assert.Single(service.GetOverview().OpenQuestions);
-        Assert.Empty(service.GetOverview().Components);
+        Assert.Empty(Built(service));
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public sealed class FlowTests
 
         var error = Assert.Throws<DomainException>(() => service.AnswerQuestion(question.Id, "approve", ""));
         Assert.Contains("deadline has passed", error.Message);
-        Assert.Empty(service.GetOverview().Components);
+        Assert.Empty(Built(service));
         Assert.Equal(QuestionStatus.DefaultApplied, service.GetOverview().Decisions.Single(d => d.Id == question.Id).QuestionStatus);
     }
 
@@ -334,6 +334,9 @@ public sealed class FlowTests
         Assert.Equal(0, overview.GetProperty("needs").GetArrayLength());
         Assert.Equal("Catalog and search", overview.GetProperty("area").GetProperty("name").GetString());
     }
+
+    private static IEnumerable<ComponentView> Built(RemitService service) =>
+        service.GetOverview().Components.Where(c => !c.TakenOver);
 
     private sealed class ManualClock : TimeProvider
     {

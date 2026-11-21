@@ -30,9 +30,11 @@ public sealed record PropertyView(
     Bindingness Bindingness,
     string MeasuredBy,
     string? Expected,
-    string? NeedId);
+    string? NeedId,
+    DeviationKind? OpenDeviation,
+    string? OpenDeviationText);
 
-public sealed record ComponentView(string Id, string Name, ComponentKind Kind, ComponentStatus Status, string? NeedId);
+public sealed record ComponentView(string Id, string Name, ComponentKind Kind, ComponentStatus Status, string? NeedId, bool TakenOver);
 
 public sealed record QuestionOptionView(string Key, string Title, string Description);
 
@@ -46,6 +48,7 @@ public sealed record DecisionView(
     DateTimeOffset At,
     string? NeedId,
     string? NeedTitle,
+    string? About,
     string? Question,
     IReadOnlyList<QuestionOptionView> Options,
     string? DefaultOption,
@@ -60,7 +63,8 @@ public sealed record OverviewView(
     IReadOnlyList<PropertyView> Properties,
     IReadOnlyList<ComponentView> Components,
     IReadOnlyList<DecisionView> OpenQuestions,
-    IReadOnlyList<DecisionView> Decisions);
+    IReadOnlyList<DecisionView> Decisions,
+    IReadOnlyList<DeviationView> Deviations);
 
 public sealed record NeedView(
     string Id,
