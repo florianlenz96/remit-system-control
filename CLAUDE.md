@@ -1,91 +1,96 @@
 # CLAUDE.md – Kommandozentrale
 
-Projektkontext für Claude Code. Lies diese Datei vollständig, bevor du etwas änderst.
-Arbeitssprache in Doku, ADRs und UI-Texten: **Deutsch**. Code, Bezeichner und Commit-Messages: Englisch.
+Project context for Claude Code. Read this file completely before you change anything.
+Working language for docs, ADRs, UI texts, code, identifiers and commit messages: **English**.
 
-## Worum es geht
+## What this is about
 
-Die Kommandozentrale ist eine Web-Anwendung, in der ein **Technical Product Owner (TPO)**
-beschreibt, *was* ein IT-System leisten soll. KI-Agents entscheiden, *wie* es gebaut wird,
-bauen es und betreiben es dauerhaft – innerhalb von Grenzen, die der TPO festlegt.
+The Kommandozentrale is a web application in which a **Technical Product Owner (TPO)**
+describes *what* an IT system should deliver. AI agents decide *how* it is built,
+build it and operate it permanently – within limits that the TPO sets.
 
-Der TPO versteht das Gesamtsystem, muss aber die einzelnen Komponenten (die „Black Box“)
-nicht verstehen. Er sieht **nie** Code, Git oder Ressourcen-IDs – nur Bedarfe,
-Systemeigenschaften, Entscheidungen und Ergebnisse.
+The TPO understands the overall system but does not need to understand the individual Components
+(the "black box"). They **never** see code, Git or resource IDs – only Needs,
+System properties, Decisions and results.
 
-Ausführlich: [`docs/vision.md`](docs/vision.md).
+In detail: [`docs/vision.md`](docs/vision.md).
 
-## Vokabular (verbindlich, in Code und UI genau so verwenden)
+## Vocabulary (binding, use exactly like this in code and UI)
 
-| Begriff | Bedeutung | Code-Name |
+| Term | Meaning | Code name |
 | --- | --- | --- |
-| Bedarf | Was jemand vom System braucht, in Fachsprache, ohne Lösung | `Need` |
-| Vorschlag / Option | KI-Analyse mit Lösungswegen, Wirkung, Kosten, Risiken | `Proposal` / `Option` |
-| Systemeigenschaft | Messbare Regel, die dauerhaft gilt (Ziel, Grenze, Budget …) | `SystemProperty` |
-| Entscheidung | Jede Änderung am System, durch KI oder TPO, mit Begründung | `Decision` |
-| Rückfrage | Entscheidung, die die KI nicht selbst treffen darf | `Decision` mit `kind = TpoQuestion` |
-| Bereich | Teil des Systems, für den eine Richtlinie gilt | `Area` |
-| Komponente | Technischer Baustein, von der KI angelegt | `Component` |
-| Richtlinie | Autonomie- und Transparenzstufe eines Bereichs | `Policy` |
-| Messung / Abweichung | Ist-Wert einer Eigenschaft / Verletzung, Prognose oder Drift | `Measurement` / `Deviation` |
-| Rolle | Abstrakte Fähigkeit (Ticketsystem, Bau-Agent …), über Adapter angebunden | `Role` / `Adapter` |
+| Need | Need (Bedarf): what someone needs from the system, in domain language, without a solution | `Need` |
+| Proposal / Option | Proposal / Option (Vorschlag / Option): AI analysis with solution paths, effect, cost, risks | `Proposal` / `Option` |
+| System property | System property (Systemeigenschaft): measurable rule that applies permanently (target, limit, budget …) | `SystemProperty` |
+| Decision | Decision (Entscheidung): every change to the system, by AI or TPO, with rationale | `Decision` |
+| TPO question | TPO question (Rückfrage): a Decision the AI is not allowed to make itself | `Decision` with `kind = TpoQuestion` |
+| Area | Area (Bereich): part of the system to which a Policy applies | `Area` |
+| Component | Component (Komponente): technical building block, created by the AI | `Component` |
+| Policy | Policy (Richtlinie): autonomy and transparency level of an Area | `Policy` |
+| Measurement / Deviation | Measurement / Deviation (Messung / Abweichung): actual value of a property / violation, forecast or drift | `Measurement` / `Deviation` |
+| Role | Role (Rolle): abstract capability (ticket system, build agent …), connected via an Adapter | `Role` / `Adapter` |
 
-Vollständiges Modell: [`docs/datenmodell.md`](docs/datenmodell.md).
+Complete model: [`docs/data-model.md`](docs/data-model.md).
 
-## Grundprinzipien (nicht verletzen)
+## Core principles (do not violate)
 
-1. **Absicht statt Implementierung.** Das Modell beschreibt, was gelten soll, nie wie es gebaut ist.
-2. **Ownership beim TPO.** Die KI legt nie selbst Ziele oder Grenzen fest (Ausnahme: Autonomiestufe 4, nur „soll“-Eigenschaften).
-3. **Alles messbar.** Eine Systemeigenschaft ohne Messvorschrift ist ungültig.
-4. **Autonomie nach Risiko**, nicht nach technischem Aufwand – pro Bereich.
-5. **Lückenlos nachvollziehbar.** Komponente → Entscheidung → Bedarf oder Abweichung.
-6. **Tool-neutral.** Der Kern kennt nur Rollen. Jira, GitHub, SRE Agent usw. sind austauschbare Adapter.
-7. **Quelle der Wahrheit ist die Zentrale.** Angebundene Tools bekommen nur Kopien.
-8. **Zwei kollidierende „muss“-Eigenschaften löst nie die KI auf** – daraus wird immer eine Rückfrage.
+1. **Intent instead of implementation.** The model describes what should apply, never how it is built.
+2. **Ownership stays with the TPO.** The AI never sets targets or limits itself (exception: autonomy level 4, "should" properties only).
+3. **Everything measurable.** A System property without a measurement spec is invalid.
+4. **Autonomy by risk**, not by technical effort – per Area.
+5. **Fully traceable.** Component → Decision → Need or Deviation.
+6. **Tool-neutral.** The core only knows Roles. Jira, GitHub, SRE Agent etc. are interchangeable Adapters.
+7. **The command center is the source of truth.** Connected tools only receive copies.
+8. **Two conflicting "must" properties are never resolved by the AI** – they always become a TPO question.
 
-## Architekturentscheidungen
+## Architecture decisions
 
-Alle Entscheidungen stehen als ADRs in [`docs/adr/`](docs/adr/). Kurzfassung:
+All decisions are recorded as ADRs in [`docs/adr/`](docs/adr/). Summary:
 
-| ADR | Entscheidung | Status |
+| ADR | Decision | Status |
 | --- | --- | --- |
-| 0001 | Kern selbst bauen, vorhandene Tools über Adapter anbinden | angenommen |
-| 0002 | Git und Code sind für den TPO unsichtbar | angenommen |
-| 0003 | Auslieferung in den Azure-Tenant des Kunden, eine Instanz pro Kunde | angenommen |
-| 0004 | Verlauf als Event Store, aktueller Stand als abgeleitete Tabellen | angenommen |
-| 0005 | Autonomie wird über Azure-Rechte durchgesetzt; kein PIM für Managed Identities | angenommen |
-| 0006 | Rollen werden über MCP angebunden; die Zentrale bietet selbst einen MCP-Server an | angenommen |
-| 0007 | PostgreSQL für Event Store und Tabellen | vorgeschlagen |
-| 0008 | .NET 10 + Vue 3, ein Container auf Azure Container Apps, MCP-Server im Backend, xUnit v3 / Vitest | angenommen |
+| 0001 | Build the core ourselves, connect existing tools via Adapters | accepted |
+| 0002 | Git and code are invisible to the TPO | accepted |
+| 0003 | Delivery into the customer's Azure tenant, one instance per customer | accepted |
+| 0004 | History as an event store, current state as derived tables | accepted |
+| 0005 | Autonomy is enforced via Azure permissions; no PIM for managed identities | accepted |
+| 0006 | Roles are connected via MCP; the command center offers its own MCP server | accepted |
+| 0007 | PostgreSQL for event store and tables | proposed |
+| 0008 | .NET 10 + Vue 3, one container on Azure Container Apps, MCP server in the backend, xUnit v3 / Vitest | accepted |
 
-Neue grundlegende Entscheidungen immer als neues ADR anlegen (Vorlage: `docs/adr/0000-vorlage.md`),
-nie stillschweigend im Code treffen.
+Always record new fundamental decisions as a new ADR (template: `docs/adr/0000-template.md`),
+never make them silently in code.
 
-## Aktueller Stand und nächster Schritt
+## Current state and next step
 
-- Konzept, Datenmodell und Klick-Entwurf sind fertig.
-- **Als Nächstes: PoC mit dem Cache-Szenario** – siehe [`docs/poc-plan.md`](docs/poc-plan.md).
-- Tech-Stack ist entschieden (ADR 0008). Build und Tests: `dotnet test` im Repository-Wurzelverzeichnis.
+- Concept, data model and clickable mockup are done.
+- PoC with the cache scenario – see [`docs/poc-plan.md`](docs/poc-plan.md).
+- The tech stack is decided (ADR 0008). Build and tests: `dotnet test` in the repository root (.NET 10 SDK,
+  Microsoft Testing Platform via `global.json`).
+- **PoC step 1 (domain core) – first slice done:** event-sourced aggregates (Area, SystemProperty, Need,
+  Proposal, Decision, Component, Deviation), escalation rules, contradiction detection and conflict
+  resolution between properties, property state evaluation – with tests in `tests/Kommandozentrale.Domain.Tests`.
+- **Next:** projections and the PostgreSQL event store (ADR 0007), then step 2 (web app with the three screens).
 
-## Arbeitsweise
+## Way of working
 
-- Kleine, überprüfbare Schritte. Nach jedem Schritt kurz zusammenfassen, was sich geändert hat.
-- Alles, was in Azure läuft, als Infrastructure as Code (Bicep) unter `infra/`. Nichts manuell im Portal.
-- Keine Secrets im Repository. Managed Identities statt Schlüssel, wo immer möglich.
-- UI-Texte in Fachsprache des TPO (siehe Vokabular), keine technischen Begriffe in der Oberfläche.
-- Domänenlogik (Regeln zu Autonomie, Eskalation, Konflikten) gehört in den Kern, nicht in Adapter.
-- Tests für Domänenregeln zuerst, besonders: Eskalationsregeln und Konflikterkennung zwischen Eigenschaften.
+- Small, verifiable steps. After each step, briefly summarize what changed.
+- Everything that runs in Azure as Infrastructure as Code (Bicep) under `infra/`. Nothing manually in the portal.
+- No secrets in the repository. Managed identities instead of keys wherever possible.
+- UI texts in the TPO's domain language (see vocabulary), no technical terms in the UI.
+- Domain logic (rules for autonomy, escalation, conflicts) belongs in the core, not in Adapters.
+- Tests for domain rules first, especially: escalation rules and conflict detection between properties.
 
-## Was du NICHT tun sollst
+## What you must NOT do
 
-- Keine Mandantentrennung bauen – jede Instanz gehört genau einem Kunden (ADR 0003).
-- Keine Systemeigenschaften, Richtlinien oder Entscheidungen in Confluence, Jira oder GitHub als Wahrheit ablegen (ADR 0001).
-- Kein Event Store für Messwerte – die bleiben in Azure Monitor und werden nur referenziert (ADR 0004).
-- Keine produktspezifischen Begriffe (Jira, SRE Agent …) im Domänenmodell.
+- Do not build multi-tenancy – each instance belongs to exactly one customer (ADR 0003).
+- Do not store System properties, Policies or Decisions in Confluence, Jira or GitHub as the truth (ADR 0001).
+- No event store for measured values – they stay in Azure Monitor and are only referenced (ADR 0004).
+- No product-specific terms (Jira, SRE Agent …) in the domain model.
 
-## Weitere Dokumente
+## Further documents
 
-- [`docs/vision.md`](docs/vision.md) – Idee, Rollen, Ablauf, Geschäftsmodell
-- [`docs/datenmodell.md`](docs/datenmodell.md) – Entitäten, Felder, Stufen, Cache-Beispiel
-- [`docs/poc-plan.md`](docs/poc-plan.md) – Umfang, Schritte, Abnahmekriterien des PoC
-- [`docs/mockup.md`](docs/mockup.md) – Klick-Entwurf der drei Screens
+- [`docs/vision.md`](docs/vision.md) – idea, roles, flow, business model
+- [`docs/data-model.md`](docs/data-model.md) – entities, fields, levels, cache example
+- [`docs/poc-plan.md`](docs/poc-plan.md) – scope, steps, acceptance criteria of the PoC
+- [`docs/mockup.md`](docs/mockup.md) – clickable mockup of the three screens
