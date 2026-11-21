@@ -1,1 +1,1 @@
-Bicep templates for the command center and the demo shop (see ADR 0003, PoC step 4).
+Bicep templates for Remit and the demo shop (see ADR 0003, PoC step 4).

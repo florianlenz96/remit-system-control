@@ -1,4 +1,4 @@
-# ADR 0006: Roles are connected via MCP; the command center offers its own MCP server
+# ADR 0006: Roles are connected via MCP; Remit offers its own MCP server
 
 - Status: accepted
 - Date: 2026-11-20
@@ -14,14 +14,14 @@ can be controlled from outside via the Azure MCP Server
 
 - The core only knows Roles: ticket system, repository, build agent, operations agent, measurement source, documentation.
 - Concrete tools are connected as Adapters, preferably via MCP.
-- The command center offers its own MCP server. Through it, agents read System properties and
+- Remit offers its own MCP server. Through it, agents read System properties and
   Policies and report Decisions, Deviations and TPO questions.
 
 ## Consequences
 
 - Switching a tool means swapping an Adapter, not changing the core.
-- Agents query the truth directly from the command center instead of from copies.
-- The command center's MCP server is a security-critical interface (authentication via managed identity / Entra ID).
+- Agents query the truth directly from Remit instead of from copies.
+- Remit's MCP server is a security-critical interface (authentication via managed identity / Entra ID).
 
 ## Rejected alternatives
 

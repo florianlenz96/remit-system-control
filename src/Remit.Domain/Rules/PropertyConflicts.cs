@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain;
+namespace Remit.Domain;
 
 /// <summary>Two properties that can never be fulfilled at the same time.</summary>
 public sealed record PropertyContradiction(SystemPropertyId First, SystemPropertyId Second, string Reason);

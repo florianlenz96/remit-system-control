@@ -1,6 +1,6 @@
-using static Kommandozentrale.Domain.Tests.TestData;
+using static Remit.Domain.Tests.TestData;
 
-namespace Kommandozentrale.Domain.Tests;
+namespace Remit.Domain.Tests;
 
 public class PropertyContradictionDetectorTests
 {

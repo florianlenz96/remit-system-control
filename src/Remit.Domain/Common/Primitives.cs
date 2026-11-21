@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain;
+namespace Remit.Domain;
 
 /// <summary>Violation of a domain rule.</summary>
 public sealed class DomainException(string message) : Exception(message);

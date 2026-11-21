@@ -1,4 +1,4 @@
-namespace Kommandozentrale.Domain.Tests;
+namespace Remit.Domain.Tests;
 
 /// <summary>Shared fixtures based on the cache scenario from docs/data-model.md.</summary>
 internal static class TestData

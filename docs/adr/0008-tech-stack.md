@@ -1,4 +1,4 @@
-# ADR 0008: Tech stack of the command center
+# ADR 0008: Tech stack of Remit
 
 - Status: accepted
 - Date: 2026-11-21
@@ -29,9 +29,9 @@ in the customer's tenant; event sourcing implementable without a heavyweight fra
 Code layout:
 
 ```
-src/Kommandozentrale.Domain   domain core without dependencies (entities, events, rules)
+src/Remit.Domain   domain core without dependencies (entities, events, rules)
 src/…                          further projects (API/MCP, persistence, Adapters, Vue app) follow step by step
-tests/Kommandozentrale.Domain.Tests
+tests/Remit.Domain.Tests
 ```
 
 ## Consequences

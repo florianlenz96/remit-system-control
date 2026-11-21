@@ -1,11 +1,11 @@
-# CLAUDE.md – Kommandozentrale
+# CLAUDE.md – Remit
 
 Project context for Claude Code. Read this file completely before you change anything.
 Working language for docs, ADRs, UI texts, code, identifiers and commit messages: **English**.
 
 ## What this is about
 
-The Kommandozentrale is a web application in which a **Technical Product Owner (TPO)**
+Remit is a web application in which a **Technical Product Owner (TPO)**
 describes *what* an IT system should deliver. AI agents decide *how* it is built,
 build it and operate it permanently – within limits that the TPO sets.
 
@@ -40,7 +40,7 @@ Complete model: [`docs/data-model.md`](docs/data-model.md).
 4. **Autonomy by risk**, not by technical effort – per Area.
 5. **Fully traceable.** Component → Decision → Need or Deviation.
 6. **Tool-neutral.** The core only knows Roles. Jira, GitHub, SRE Agent etc. are interchangeable Adapters.
-7. **The command center is the source of truth.** Connected tools only receive copies.
+7. **Remit is the source of truth.** Connected tools only receive copies.
 8. **Two conflicting "must" properties are never resolved by the AI** – they always become a TPO question.
 
 ## Architecture decisions
@@ -54,7 +54,7 @@ All decisions are recorded as ADRs in [`docs/adr/`](docs/adr/). Summary:
 | 0003 | Delivery into the customer's Azure tenant, one instance per customer | accepted |
 | 0004 | History as an event store, current state as derived tables | accepted |
 | 0005 | Autonomy is enforced via Azure permissions; no PIM for managed identities | accepted |
-| 0006 | Roles are connected via MCP; the command center offers its own MCP server | accepted |
+| 0006 | Roles are connected via MCP; Remit offers its own MCP server | accepted |
 | 0007 | PostgreSQL for event store and tables | proposed |
 | 0008 | .NET 10 + Vue 3, one container on Azure Container Apps, MCP server in the backend, xUnit v3 / Vitest | accepted |
 
@@ -69,7 +69,7 @@ never make them silently in code.
   Microsoft Testing Platform via `global.json`).
 - **PoC step 1 (domain core) – first slice done:** event-sourced aggregates (Area, SystemProperty, Need,
   Proposal, Decision, Component, Deviation), escalation rules, contradiction detection and conflict
-  resolution between properties, property state evaluation – with tests in `tests/Kommandozentrale.Domain.Tests`.
+  resolution between properties, property state evaluation – with tests in `tests/Remit.Domain.Tests`.
 - **Next:** projections and the PostgreSQL event store (ADR 0007), then step 2 (web app with the three screens).
 
 ## Way of working

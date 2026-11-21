@@ -5,7 +5,7 @@
 
 ## Context
 
-The command center must be able to prove who decided what and when, and which state of
+Remit must be able to prove who decided what and when, and which state of
 properties and Policies applied at a given point in time (audit, GDPR accountability,
 evaluation for earned autonomy). At the same time, the UI needs fast queries
 on the current state.
@@ -15,7 +15,7 @@ on the current state.
 - **Event store (append-only)** for the history: Decisions, changes to System properties
   and Policies, status changes of Needs and Proposals.
 - **Tables** as projections for the current state.
-- **Raw measured values stay in Azure Monitor**; the command center stores only references and, where needed, aggregates.
+- **Raw measured values stay in Azure Monitor**; Remit stores only references and, where needed, aggregates.
 
 ## Consequences
 
