@@ -21,6 +21,8 @@ Concept phase complete, PoC starting. See [`docs/poc-plan.md`](docs/poc-plan.md)
 | Document | Content |
 | --- | --- |
 | [CLAUDE.md](CLAUDE.md) | Project context for Claude Code |
+| [.github/copilot-instructions.md](.github/copilot-instructions.md) | Project context for GitHub Copilot |
+| [.devcontainer/](.devcontainer/) | Codespaces / dev container setup (.NET 10, Node, Azure CLI + Bicep, PostgreSQL) |
 | [docs/vision.md](docs/vision.md) | Idea, roles, flow, business model |
 | [docs/data-model.md](docs/data-model.md) | Data model with cache example |
 | [docs/poc-plan.md](docs/poc-plan.md) | PoC: scope, steps, acceptance |
