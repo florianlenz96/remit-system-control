@@ -44,6 +44,7 @@ export interface Need {
 export interface PropertyTemplate {
   type: PropertyType; label: string; question: string; metric: string | null; unit: string | null
   defaultValue: number | null; defaultStatement: string | null; measuredBy: string; isNumeric: boolean
+  minValue: number | null; maxValue: number | null
 }
 export interface PropertyInput { type: PropertyType; value: number | null; statement: string | null; bindingness: Bindingness }
 

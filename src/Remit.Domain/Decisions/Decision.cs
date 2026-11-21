@@ -19,6 +19,9 @@ public enum ReferenceKind
     SystemProperty,
     Component,
     Deviation,
+
+    /// <summary>E.g. a change of the policy of an area.</summary>
+    Area,
 }
 
 /// <summary>What a decision is about. Every component traces back to a need or deviation through decisions.</summary>
@@ -37,6 +40,8 @@ public sealed record DecisionReference(ReferenceKind Kind, string Id)
     public static DecisionReference To(ComponentId id) => new(ReferenceKind.Component, id.Value);
 
     public static DecisionReference To(DeviationId id) => new(ReferenceKind.Deviation, id.Value);
+
+    public static DecisionReference To(AreaId id) => new(ReferenceKind.Area, id.Value);
 }
 
 /// <summary>Components and properties changed by a decision.</summary>

@@ -36,8 +36,8 @@ public sealed class RemitService
 
     // ---- Setup --------------------------------------------------------------------------------
 
-    /// <summary>Creates the example system: one area and one need that waits for the TPO.</summary>
-    public void SeedExample()
+    /// <summary>Creates the one area of the example system. Required; the app cannot work without it.</summary>
+    public void EnsureArea()
     {
         lock (_lock)
         {
@@ -55,6 +55,16 @@ public sealed class RemitService
                 Tpo,
                 Now);
             Save($"area-{area.Id}", area);
+        }
+    }
+
+    /// <summary>Adds an example need that waits for the TPO, unless there are needs already.</summary>
+    public void SeedExample()
+    {
+        EnsureArea();
+        if (_store.LoadAll("need-").Count > 0)
+        {
+            return;
         }
 
         RegisterNeed(
@@ -134,6 +144,17 @@ public sealed class RemitService
                 throw new DomainException($"These properties cannot both apply: {DescribeContradiction(contradiction, existing.Concat(properties))}");
             }
 
+            var unmet = ChangeFeasibility.UnmetTargets(option, existing.Concat(properties), Now)
+                .FirstOrDefault(u => u.Property.Definition.Bindingness == Bindingness.Must);
+            if (unmet is not null)
+            {
+                var label = PropertyTemplates.For(unmet.Property.Definition.Type).Label;
+                throw new DomainException(
+                    $"\"{option.Title}\" is expected to reach {label.ToLowerInvariant()} {DescribeEffect(unmet.Effect).Text}, " +
+                    $"but \"{label} {PropertyTemplates.Describe(unmet.Property.Definition.Rule)}\" must apply. " +
+                    "Choose another option or relax the property.");
+            }
+
             var decision = Decision.RecordTpoDecision(
                 decisionId,
                 DecisionReference.To(proposal.Id),
@@ -166,6 +187,9 @@ public sealed class RemitService
             var proposal = ProposalOf(need.Id) ?? throw new DomainException($"Need {needId} has no proposal yet.");
             proposal.Reject(reason, Tpo, Now);
             need.Reject(reason, Tpo, Now);
+            var decision = Decision.RecordTpoDecision(
+                NextDecisionId(), DecisionReference.To(need.Id), "Need rejected", reason, DecisionEffects.None, Tpo, Now);
+            Save($"decision-{decision.Id}", decision);
             Save($"proposal-{proposal.Id}", proposal);
             Save($"need-{need.Id}", need);
         }
@@ -177,7 +201,16 @@ public sealed class RemitService
         {
             var question = Load($"decision-{decisionId}", Decision.FromHistory)
                 ?? throw new DomainException($"There is no question {decisionId}.");
-            question.Answer(optionKey, rationale ?? "", Tpo, Now);
+            var now = Now;
+            if (question.ApplyDefaultIfDue(now))
+            {
+                Save($"decision-{question.Id}", question);
+                ApplyAnswer(question);
+                var applied = question.Options.First(o => o.Key == question.Chosen).Title;
+                throw new DomainException($"The deadline has passed; the default option \"{applied}\" was applied.");
+            }
+
+            question.Answer(optionKey, rationale ?? "", Tpo, now);
             Save($"decision-{question.Id}", question);
             ApplyAnswer(question);
         }
@@ -188,12 +221,35 @@ public sealed class RemitService
         lock (_lock)
         {
             var area = LoadArea();
-            area.ChangePolicy(new Policy(autonomy, transparency), reason, Tpo, Now);
-            Save($"area-{area.Id}", area);
+            var before = area.Policy;
+            var after = new Policy(autonomy, transparency);
+            if (after == before)
+            {
+                return;
+            }
 
-            // Needs that waited only because the AI was not allowed to build may continue now.
+            area.ChangePolicy(after, reason, Tpo, Now);
+            var decision = Decision.RecordTpoDecision(
+                NextDecisionId(),
+                DecisionReference.To(area.Id),
+                $"Policy of \"{area.Name}\": autonomy {(int)before.Autonomy} → {(int)after.Autonomy}, " +
+                $"transparency {(int)before.Transparency} → {(int)after.Transparency}",
+                reason,
+                DecisionEffects.None,
+                Tpo,
+                Now);
+            Save($"area-{area.Id}", area);
+            Save($"decision-{decision.Id}", decision);
+
+            if (before.Autonomy != AutonomyLevel.ProposeOnly || after.Autonomy == AutonomyLevel.ProposeOnly)
+            {
+                return;
+            }
+
+            // Needs that waited only because the AI was not allowed to build may continue now. Needs the
+            // TPO deferred (declined, kept the budget, or let the default apply) stay as they are.
             foreach (var need in LoadAll("need-", Need.FromHistory).Select(x => x.Aggregate)
-                         .Where(n => n.Status == NeedStatus.PropertiesDefined && !HasOpenQuestion(n.Id)))
+                         .Where(n => n.Status == NeedStatus.PropertiesDefined && !HasOpenQuestion(n.Id) && !WasDeferred(n.Id)))
             {
                 var proposal = ProposalOf(need.Id)!;
                 TryBuild(need, proposal.GetOption(proposal.AcceptedOption!.Value), approvedByTpo: false);
@@ -213,11 +269,8 @@ public sealed class RemitService
         var plan = SimulatedAgents.PlanFor(option.Id);
         var triggers = new List<AlwaysAskTrigger>();
 
-        var budget = PropertiesOf(need.Id)
-            .Where(p => p.Definition.Type == PropertyType.Budget && p.Definition.Rule is ThresholdRule)
-            .Select(p => (ThresholdRule)p.Definition.Rule)
-            .FirstOrDefault();
-        if (budget is not null && !budget.IsSatisfiedBy(option.Cost.MinPerMonth))
+        var (exceeded, projected) = CheckBudgets(option);
+        if (exceeded.Count > 0)
         {
             triggers.Add(AlwaysAskTrigger.BudgetExceeded);
         }
@@ -226,10 +279,11 @@ public sealed class RemitService
 
         if (escalation.Outcome == EscalationOutcome.TpoQuestion)
         {
+            var limits = string.Join(" and ", exceeded.Select(p => PropertyTemplates.Describe(p.Definition.Rule)).Distinct());
             Ask(need, escalation.EffectiveAutonomy,
-                $"\"{option.Title}\" costs at least {Money(option.Cost.MinPerMonth)} per month, but the budget is {PropertyTemplates.Describe(budget!)}.",
+                $"With \"{option.Title}\" the monthly cost of \"{area.Name}\" can reach {Money(projected)}, but the budget is {limits}.",
                 [
-                    new("raise-budget", $"Raise the budget to {Money(option.Cost.MaxPerMonth)} per month", "The AI builds the solution as proposed."),
+                    new("raise-budget", $"Raise the budget to {Money(projected)} per month", "The AI builds the solution as proposed."),
                     new("keep-budget", "Keep the budget", "Nothing is built. You can send the need back for a new analysis later."),
                 ],
                 "keep-budget");
@@ -254,12 +308,17 @@ public sealed class RemitService
             return;
         }
 
+        var shouldNotes = ChangeFeasibility.UnmetTargets(option, ActiveProperties(), Now)
+            .Select(u => $" The \"should\" property {PropertyTemplates.For(u.Property.Definition.Type).Label.ToLowerInvariant()} " +
+                         $"{PropertyTemplates.Describe(u.Property.Definition.Rule)} will probably not be met (expected {DescribeEffect(u.Effect).Text}).");
+        var rationale = plan.Rationale + (approvedByTpo ? " Approved by the TPO." : "") + string.Concat(shouldNotes);
+
         var componentId = new ComponentId($"C-{_store.LoadAll("component-").Count + 1:000}");
         var decision = Decision.RecordAiDecision(
             NextDecisionId(),
             DecisionReference.To(need.Id),
             plan.Choice,
-            approvedByTpo ? $"{plan.Rationale} Approved by the TPO." : plan.Rationale,
+            rationale,
             new DecisionEffects([componentId], []),
             escalation.EffectiveAutonomy,
             SimulatedAgents.Builder,
@@ -303,13 +362,17 @@ public sealed class RemitService
         switch (question.Chosen)
         {
             case "raise-budget":
-                var budget = PropertiesOf(need.Id).First(p => p.Definition.Type == PropertyType.Budget);
-                var rule = (ThresholdRule)budget.Definition.Rule;
-                var d = budget.Definition;
-                budget.Change(
-                    new PropertyDefinition(d.Type, d.Scope, rule with { Value = option.Cost.MaxPerMonth }, d.Measurement, d.Bindingness, d.Validity, d.Responsible),
-                    question.Id, Tpo, LoadArea().Policy.Autonomy, Now);
-                Save($"property-{budget.Id}", budget);
+                var (exceeded, projected) = CheckBudgets(option);
+                foreach (var budget in exceeded)
+                {
+                    var d = budget.Definition;
+                    var rule = (ThresholdRule)d.Rule;
+                    budget.Change(
+                        new PropertyDefinition(d.Type, d.Scope, rule with { Value = projected }, d.Measurement, d.Bindingness, d.Validity, d.Responsible),
+                        question.Id, Tpo, LoadArea().Policy.Autonomy, Now);
+                    Save($"property-{budget.Id}", budget);
+                }
+
                 TryBuild(need, option, approvedByTpo: false);
                 break;
             case "approve":
@@ -460,7 +523,7 @@ public sealed class RemitService
                             .FirstOrDefault();
                         if (expected is null && p.Definition.Type == PropertyType.Budget)
                         {
-                            expected = $"{option.Cost.MinPerMonth.ToString("0", CultureInfo.InvariantCulture)}–{Money(option.Cost.MaxPerMonth)} per month";
+                            expected = $"{PropertyTemplates.Number(option.Cost.MinPerMonth)}–{Money(option.Cost.MaxPerMonth)} per month";
                         }
                     }
 
@@ -494,11 +557,11 @@ public sealed class RemitService
     private static EffectView DescribeEffect(ExpectedEffect effect)
     {
         var template = PropertyTemplates.All.FirstOrDefault(t => t.Metric == effect.Metric);
-        var value = effect.Value.ToString("0.###", CultureInfo.InvariantCulture);
+        var value = PropertyTemplates.Number(effect.Value);
         return new EffectView(template?.Label ?? effect.Metric, $"about {value} {effect.Unit}");
     }
 
-    private static string Money(decimal amount) => $"{amount.ToString("0", CultureInfo.InvariantCulture)} EUR";
+    private static string Money(decimal amount) => $"{PropertyTemplates.Number(amount)} EUR";
 
     private static string DescribeContradiction(PropertyContradiction c, IEnumerable<SystemProperty> all)
     {
@@ -517,19 +580,30 @@ public sealed class RemitService
             x.Aggregate.QuestionStatus == QuestionStatus.Open &&
             x.Aggregate.Reference == DecisionReference.To(need));
 
-    private IReadOnlyList<SystemProperty> PropertiesOf(NeedId need)
+    private static readonly string[] DeferringAnswers = ["keep-budget", "decline"];
+
+    /// <summary>The latest answered question about the need put the build on hold.</summary>
+    private bool WasDeferred(NeedId need) =>
+        LoadAll("decision-", Decision.FromHistory)
+            .Where(x => x.Aggregate.Kind == DecisionKind.TpoQuestion && x.Aggregate.Reference == DecisionReference.To(need))
+            .OrderBy(x => x.CreatedAt)
+            .Select(x => x.Aggregate.Chosen)
+            .LastOrDefault() is { } chosen && DeferringAnswers.Contains(chosen);
+
+    private List<SystemProperty> ActiveProperties() =>
+        LoadAll("property-", SystemProperty.FromHistory).Select(x => x.Aggregate).Where(p => p.IsActiveAt(Now)).ToList();
+
+    /// <summary>Budgets of the area that the option would exceed, together with the area's projected monthly cost.</summary>
+    private (IReadOnlyList<SystemProperty> Exceeded, decimal Projected) CheckBudgets(ProposalOption option)
     {
-        var decisions = LoadAll("decision-", Decision.FromHistory).Select(x => x.Aggregate).ToList();
-        var proposal = ProposalOf(need);
-        var originating = decisions
-            .Where(d => d.Reference == DecisionReference.To(need) ||
-                        (proposal is not null && d.Reference == DecisionReference.To(proposal.Id)))
-            .Select(d => d.Id)
-            .ToHashSet();
-        return LoadAll("property-", SystemProperty.FromHistory)
+        var running = LoadAll("need-", Need.FromHistory)
             .Select(x => x.Aggregate)
-            .Where(p => !p.IsRetired && originating.Contains(p.OriginatingDecision))
-            .ToList();
+            .Where(n => n.Status is NeedStatus.InImplementation or NeedStatus.InOperation)
+            .Select(n => ProposalOf(n.Id))
+            .Where(p => p?.AcceptedOption is not null)
+            .Sum(p => p!.GetOption(p.AcceptedOption!.Value).Cost.MaxPerMonth);
+        return (ChangeFeasibility.ExceededBudgets(option, running, ActiveProperties(), Now),
+                ChangeFeasibility.ProjectedMonthlyCost(option, running));
     }
 
     private DecisionId NextDecisionId() => new($"D-{_store.LoadAll("decision-").Count + 1:000}");

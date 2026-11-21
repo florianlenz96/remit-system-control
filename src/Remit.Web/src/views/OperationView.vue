@@ -24,10 +24,11 @@ async function run(action: () => Promise<void>) {
   try {
     await action()
     reason.value = ''
-    await refresh()
   } catch (e) {
     error.value = (e as Error).message
   } finally {
+    // Also after an error: e.g. a late answer applies the default option on the server.
+    await refresh()
     busy.value = false
   }
 }

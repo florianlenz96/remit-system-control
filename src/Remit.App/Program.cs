@@ -12,9 +12,11 @@ builder.Services.AddSingleton<RemitService>();
 
 var app = builder.Build();
 
+var remit = app.Services.GetRequiredService<RemitService>();
+remit.EnsureArea();
 if (app.Configuration.GetValue("Remit:SeedExample", true))
 {
-    app.Services.GetRequiredService<RemitService>().SeedExample();
+    remit.SeedExample();
 }
 
 app.UseDomainErrors();

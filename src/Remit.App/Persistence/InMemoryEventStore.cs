@@ -43,16 +43,16 @@ public sealed class InMemoryEventStore
 
         lock (_lock)
         {
-            if (!_streams.TryGetValue(streamId, out var stream))
+            var current = _streams.TryGetValue(streamId, out var stream) ? stream.Count : 0;
+            if (current != expectedVersion)
+            {
+                throw new ConcurrencyException($"Stream {streamId} is at version {current}, expected {expectedVersion}.");
+            }
+
+            if (stream is null)
             {
                 stream = [];
                 _streams[streamId] = stream;
-            }
-
-            if (stream.Count != expectedVersion)
-            {
-                throw new ConcurrencyException(
-                    $"Stream {streamId} is at version {stream.Count}, expected {expectedVersion}.");
             }
 
             stream.AddRange(events);

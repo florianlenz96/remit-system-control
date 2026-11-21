@@ -3,8 +3,8 @@ import type { PropertyTemplate } from './api'
 import { cost, initialInputs, statusTone, validate } from './labels'
 
 const templates: PropertyTemplate[] = [
-  { type: 'Performance', label: 'Response time', question: '', metric: 'p95_response_time', unit: 'ms', defaultValue: 250, defaultStatement: null, measuredBy: '', isNumeric: true },
-  { type: 'Exclusion', label: 'Exclusion', question: '', metric: null, unit: null, defaultValue: null, defaultStatement: 'Never from a copy', measuredBy: '', isNumeric: false },
+  { type: 'Performance', label: 'Response time', question: '', metric: 'p95_response_time', unit: 'ms', defaultValue: 250, defaultStatement: null, measuredBy: '', isNumeric: true, minValue: 1, maxValue: null },
+  { type: 'Exclusion', label: 'Exclusion', question: '', metric: null, unit: null, defaultValue: null, defaultStatement: 'Never from a copy', measuredBy: '', isNumeric: false, minValue: null, maxValue: null },
 ]
 
 describe('initialInputs', () => {

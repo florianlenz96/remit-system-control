@@ -24,7 +24,12 @@ async function load() {
 }
 
 onMounted(async () => {
-  templates.value = await api.templates()
+  try {
+    templates.value = await api.templates()
+  } catch (e) {
+    error.value = (e as Error).message
+    return
+  }
   await load()
 })
 
@@ -139,14 +144,15 @@ function approve() {
           </div>
           <label class="hint">{{ template(input.type).question }}
             <span v-if="template(input.type).isNumeric" class="value">
-              <input type="number" step="any" v-model.number="input.value" required />
+              <input type="number" step="any" v-model.number="input.value" required
+                :min="template(input.type).minValue ?? undefined" :max="template(input.type).maxValue ?? undefined" />
               <span>{{ template(input.type).unit }}</span>
             </span>
             <input v-else v-model="input.statement" required />
           </label>
           <div class="binding">
-            <label><input type="radio" value="Must" v-model="input.bindingness" /> must</label>
-            <label><input type="radio" value="Should" v-model="input.bindingness" /> should</label>
+            <label><input type="radio" :name="`binding-${input.type}`" value="Must" v-model="input.bindingness" /> must</label>
+            <label><input type="radio" :name="`binding-${input.type}`" value="Should" v-model="input.bindingness" /> should</label>
             <span class="muted">Checked by: {{ template(input.type).measuredBy }}</span>
           </div>
         </div>

@@ -131,18 +131,150 @@ public sealed class FlowTests
     }
 
     [Fact]
-    public void Properties_of_a_second_need_apply_alongside_the_first()
+    public void Must_targets_of_earlier_needs_apply_to_later_options_in_the_area()
     {
         var service = NewService();
         service.AcceptOption("N-001", "cache", CacheInputs());
         var second = service.RegisterNeed("Pages load slowly", "Load time is too long.", Priority.Low);
 
-        service.AcceptOption(second, "cdn", [Input(PropertyType.Performance, 200), Input(PropertyType.Budget, 100)]);
+        var error = Assert.Throws<DomainException>(() =>
+            service.AcceptOption(second, "cdn", [Input(PropertyType.Performance, 500), Input(PropertyType.Budget, 300)]));
+
+        Assert.Contains("at most 250 ms", error.Message);
+    }
+
+    [Fact]
+    public void Budgets_apply_to_the_whole_area_including_what_already_runs()
+    {
+        var service = NewService();
+        service.AcceptOption("N-001", "cache", CacheInputs(budget: 250));
+        var second = service.RegisterNeed("Wish list", "Customers want to save products for later.", Priority.Low);
+
+        // Cache (up to 200) + new building block (up to 150) = 350 EUR/month in the area, above the 250 budget.
+        service.AcceptOption(second, "new-part", [Input(PropertyType.Budget, 400), Input(PropertyType.FailureBehavior)]);
+
+        var question = Assert.Single(service.GetOverview().OpenQuestions);
+        Assert.Contains("350 EUR", question.Question);
+        Assert.Contains("at most 250 EUR/month", question.Question);
+        Assert.DoesNotContain("400", question.Question);
+
+        service.AnswerQuestion(question.Id, "raise-budget", "");
 
         var overview = service.GetOverview();
-        Assert.Equal(7, overview.Properties.Count);
         Assert.Equal(2, overview.Components.Count);
+        var budgets = overview.Properties.Where(p => p.Type == PropertyType.Budget).Select(p => p.Rule).Order().ToList();
+        Assert.Equal(["at most 350 EUR/month", "at most 400 EUR/month"], budgets);
         Assert.All(overview.Properties, p => Assert.NotNull(p.NeedId));
+    }
+
+    [Fact]
+    public void The_budget_is_checked_against_the_upper_end_of_the_cost()
+    {
+        var service = NewService();
+
+        // Cache costs 150–200 EUR/month; 175 covers the minimum but not the maximum.
+        service.AcceptOption("N-001", "cache", CacheInputs(budget: 175));
+
+        Assert.Single(service.GetOverview().OpenQuestions);
+        Assert.Empty(service.GetOverview().Components);
+    }
+
+    [Fact]
+    public void An_option_that_misses_a_must_target_is_refused_and_a_should_target_is_noted()
+    {
+        var service = NewService();
+
+        // Content delivery is expected to reach about 450 ms.
+        var error = Assert.Throws<DomainException>(() =>
+            service.AcceptOption("N-001", "cdn", [Input(PropertyType.Performance, 250), Input(PropertyType.Budget)]));
+        Assert.Contains("must apply", error.Message);
+        Assert.Empty(service.GetOverview().Properties);
+
+        service.AcceptOption("N-001", "cdn",
+            [new PropertyInput(PropertyType.Performance, 250, null, Bindingness.Should), Input(PropertyType.Budget)]);
+
+        var ai = Assert.Single(service.GetNeed("N-001").Decisions, d => d.Kind == DecisionKind.AiDecision);
+        Assert.Contains("will probably not be met", ai.Rationale);
+    }
+
+    [Fact]
+    public void An_answer_after_the_deadline_is_refused_and_the_default_applies()
+    {
+        var clock = new ManualClock();
+        var service = new RemitService(new InMemoryEventStore(), clock);
+        service.SeedExample();
+        service.ChangePolicy(AutonomyLevel.ApproveEachStep, TransparencyLevel.Result, "Carefully");
+        service.AcceptOption("N-001", "cache", CacheInputs());
+        var question = Assert.Single(service.GetOverview().OpenQuestions);
+
+        clock.Advance(TimeSpan.FromDays(4));
+
+        var error = Assert.Throws<DomainException>(() => service.AnswerQuestion(question.Id, "approve", ""));
+        Assert.Contains("deadline has passed", error.Message);
+        Assert.Empty(service.GetOverview().Components);
+        Assert.Equal(QuestionStatus.DefaultApplied, service.GetOverview().Decisions.Single(d => d.Id == question.Id).QuestionStatus);
+    }
+
+    [Fact]
+    public void A_deferred_need_is_not_reopened_by_a_policy_change()
+    {
+        var service = NewService();
+        service.AcceptOption("N-001", "cache", CacheInputs(budget: 100));
+        service.AnswerQuestion(service.GetOverview().OpenQuestions.Single().Id, "keep-budget", "Not now");
+
+        service.ChangePolicy(AutonomyLevel.DecideWithinProperties, TransparencyLevel.Decisions, "More insight");
+        service.ChangePolicy(AutonomyLevel.ProposeOnly, TransparencyLevel.Decisions, "Pause");
+        service.ChangePolicy(AutonomyLevel.DecideWithinProperties, TransparencyLevel.Decisions, "Go on");
+
+        Assert.Empty(service.GetOverview().OpenQuestions);
+        Assert.Equal(NeedStatus.PropertiesDefined, service.GetNeed("N-001").Status);
+    }
+
+    [Fact]
+    public void Policy_changes_and_rejections_appear_in_the_decision_log()
+    {
+        var service = NewService();
+
+        service.ChangePolicy(AutonomyLevel.ApproveEachStep, TransparencyLevel.Decisions, "New team");
+        service.ChangePolicy(AutonomyLevel.ApproveEachStep, TransparencyLevel.Decisions, "Unchanged");
+        service.RejectProposal("N-001", "Not needed this year");
+
+        var decisions = service.GetOverview().Decisions;
+        var policy = Assert.Single(decisions, d => d.Chosen!.StartsWith("Policy", StringComparison.Ordinal));
+        Assert.Contains("autonomy 3 → 2", policy.Chosen);
+        Assert.Equal("New team", policy.Rationale);
+        var rejection = Assert.Single(service.GetNeed("N-001").Decisions);
+        Assert.Equal("Not needed this year", rejection.Rationale);
+    }
+
+    [Fact]
+    public void Impossible_values_are_refused_and_exact_values_are_shown_unrounded()
+    {
+        var service = NewService();
+        var id = service.RegisterNeed("Outages", "The shop is sometimes not available.", Priority.High);
+
+        var error = Assert.Throws<DomainException>(() => service.AcceptOption(id, "self-healing",
+            [new PropertyInput(PropertyType.Availability, 150, null, Bindingness.Must), Input(PropertyType.Budget)]));
+        Assert.Contains("between 0 and 100 %", error.Message);
+
+        service.AcceptOption(id, "self-healing",
+            [new PropertyInput(PropertyType.Availability, 99.9000m, null, Bindingness.Should), Input(PropertyType.Budget),
+             new PropertyInput(PropertyType.Recovery, 7.5m, null, Bindingness.Must)]);
+        var rules = service.GetNeed(id).Properties.Select(p => p.Rule).ToList();
+        Assert.Contains("at least 99.9 %", rules);
+        Assert.Contains("at most 7.5 min", rules);
+        Assert.Equal("99.9999", PropertyTemplates.Number(99.9999m));
+    }
+
+    [Fact]
+    public void A_failed_append_leaves_the_store_unchanged()
+    {
+        var store = new InMemoryEventStore();
+        var need = Need.Register(new NeedId("N-1"), new SystemId("s"), "t", "d", [], "TPO", Priority.Low, NeedSource.Manual, RemitService.Tpo, DateTimeOffset.UtcNow);
+
+        Assert.Throws<ConcurrencyException>(() => store.Append("need-N-1", 3, need.UncommittedEvents));
+
+        Assert.Empty(store.LoadAll("need-"));
     }
 
     [Fact]
@@ -176,5 +308,39 @@ public sealed class FlowTests
 
         var missing = await client.GetAsync("/api/needs/N-999", ct);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+
+        var unknownType = await client.PostAsJsonAsync("/api/needs/N-001/accept", new
+        {
+            optionId = "cdn",
+            properties = new object[]
+            {
+                new { type = "Performance", value = 500, bindingness = "Must" },
+                new { type = "Budget", value = 100, bindingness = "Must" },
+                new { type = 999, value = 1, bindingness = "Must" },
+            },
+        }, Json, ct);
+        Assert.Equal(HttpStatusCode.BadRequest, unknownType.StatusCode);
+    }
+
+    [Fact]
+    public async Task Without_the_example_the_app_still_starts_with_its_area()
+    {
+        await using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(b => b.UseSetting("Remit:SeedExample", "false"));
+        using var client = factory.CreateClient();
+
+        var overview = await client.GetFromJsonAsync<JsonElement>("/api/overview", Json, TestContext.Current.CancellationToken);
+
+        Assert.Equal(0, overview.GetProperty("needs").GetArrayLength());
+        Assert.Equal("Catalog and search", overview.GetProperty("area").GetProperty("name").GetString());
+    }
+
+    private sealed class ManualClock : TimeProvider
+    {
+        private DateTimeOffset _now = DateTimeOffset.UtcNow;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan by) => _now += by;
     }
 }

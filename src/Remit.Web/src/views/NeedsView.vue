@@ -59,12 +59,14 @@ async function submit() {
       </form>
 
       <ul class="list">
-        <li v-for="need in overview.needs" :key="need.id" class="card link" @click="go(`/needs/${need.id}`)">
-          <div>
-            <span class="muted">{{ need.id }}</span>
-            <strong>{{ need.title }}</strong>
-          </div>
-          <span class="chip" :class="statusTone(need.status)">{{ needStatus[need.status] }}</span>
+        <li v-for="need in overview.needs" :key="need.id" class="card">
+          <a class="row" :href="`#/needs/${need.id}`">
+            <div>
+              <span class="muted">{{ need.id }}</span>
+              <strong>{{ need.title }}</strong>
+            </div>
+            <span class="chip" :class="statusTone(need.status)">{{ needStatus[need.status] }}</span>
+          </a>
         </li>
       </ul>
     </section>

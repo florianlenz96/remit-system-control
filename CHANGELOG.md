@@ -11,10 +11,13 @@ First preview that can be clicked through end to end.
   added), each with "must"/"should" and how it is checked.
 - Building: the escalation rules of the domain core decide. Autonomy 3–4: the simulated build agent decides,
   creates the Component and logs the Decision with rationale. Autonomy 2: it asks for approval. Autonomy 1: it
-  only proposes and waits. Budget below the cost of the Option: always a TPO question with Options, deadline and
-  default option.
+  only proposes and waits. Budgets apply to the whole Area: if the running cost plus the upper end of the Option's
+  cost exceeds a budget, it is always a TPO question with Options, deadline and default option.
+- An Option whose expected effect misses a "must" target of the Area is refused when accepting; a missed "should"
+  target is noted in the AI's rationale.
 - Operation: open TPO questions, System properties with target and expected effect, decision log, system map,
-  Policy of the Area (autonomy and transparency) changeable with a rationale.
+  Policy of the Area (autonomy and transparency) changeable with a rationale. Policy changes and rejected Needs
+  are Decisions in the log; answers after the deadline are refused because the default option already applies.
 - Technical: `Remit.App` (ASP.NET Core Minimal API, in-memory event store with optimistic concurrency, read models
   derived from the event streams), `Remit.Web` (Vue 3), one container via `Dockerfile`.
 
