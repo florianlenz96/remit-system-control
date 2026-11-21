@@ -22,7 +22,7 @@
     "db:5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
   },
 
-  "containerEnv": {
+  "remoteEnv": {
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
     "DOTNET_NOLOGO": "1",
     "ConnectionStrings__Remit": "Host=db;Port=5432;Database=remit;Username=postgres"
